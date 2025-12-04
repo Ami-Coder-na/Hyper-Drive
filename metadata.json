@@ -1,0 +1,7 @@
+{
+  "name": "HyperDrive Market",
+  "description": "A futuristic hybrid vehicle marketplace and social platform featuring AI-powered assistants, 360-view simulations, and a neon-drenched dark UI.",
+  "requestFramePermissions": [
+    "microphone"
+  ]
+}

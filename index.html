@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>HyperDrive Market</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Exo+2:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ['"Exo 2"', 'sans-serif'],
+              display: ['"Rajdhani"', 'sans-serif'],
+            },
+            colors: {
+              neon: {
+                blue: '#00f3ff',
+                purple: '#bc13fe',
+                green: '#0aff68',
+                pink: '#ff0099',
+              },
+              theme: {
+                bg: 'rgb(var(--bg-primary) / <alpha-value>)',
+                card: 'rgb(var(--bg-card) / <alpha-value>)',
+                surface: 'rgb(var(--bg-surface) / <alpha-value>)',
+                text: 'rgb(var(--text-main) / <alpha-value>)',
+                muted: 'rgb(var(--text-muted) / <alpha-value>)',
+                border: 'var(--border-color)', 
+              }
+            },
+            animation: {
+              'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+              'glow': 'glow 2s ease-in-out infinite alternate',
+              'float': 'float 6s ease-in-out infinite',
+              'slide-up': 'slideUp 0.5s ease-out forwards',
+            },
+            keyframes: {
+              glow: {
+                '0%': { boxShadow: '0 0 5px rgba(0, 243, 255, 0.2)' },
+                '100%': { boxShadow: '0 0 20px rgba(0, 243, 255, 0.6), 0 0 10px rgba(188, 19, 254, 0.4)' },
+              },
+              float: {
+                '0%, 100%': { transform: 'translateY(0)' },
+                '50%': { transform: 'translateY(-10px)' },
+              },
+              slideUp: {
+                '0%': { opacity: '0', transform: 'translateY(20px)' },
+                '100%': { opacity: '1', transform: 'translateY(0)' },
+              }
+            },
+            backdropBlur: {
+              xs: '2px',
+            }
+          },
+        },
+      }
+    </script>
+    <style>
+      :root {
+        /* Light Mode - Premium Tech */
+        --bg-primary: 241 245 249; /* slate-100 */
+        --bg-card: 255 255 255;    /* white */
+        --bg-surface: 248 250 252; /* slate-50 */
+        --text-main: 15 23 42;     /* slate-900 */
+        --text-muted: 100 116 139; /* slate-500 */
+        --border-color: #e2e8f0;   /* slate-200 */
+      }
+
+      .dark {
+        /* Dark Mode - Deep Space Cyberpunk */
+        --bg-primary: 3 7 18;      /* almost black blue */
+        --bg-card: 15 23 42;       /* slate-900 base */
+        --bg-surface: 30 41 59;    /* slate-800 */
+        --text-main: 241 245 249;  /* slate-100 */
+        --text-muted: 148 163 184; /* slate-400 */
+        --border-color: rgba(255, 255, 255, 0.08);
+      }
+
+      body {
+        background-color: rgb(var(--bg-primary));
+        color: rgb(var(--text-main));
+        transition: background-color 0.3s ease, color 0.3s ease;
+      }
+      
+      /* Glassmorphism Utilities */
+      .glass {
+        background: rgba(var(--bg-card), 0.7);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid var(--border-color);
+      }
+      
+      .glass-card {
+        background: rgba(var(--bg-card), 0.6);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        border: 1px solid var(--border-color);
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+      }
+
+      /* Custom scrollbar */
+      ::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+      }
+      ::-webkit-scrollbar-track {
+        background: transparent;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: rgb(var(--bg-surface));
+        border-radius: 10px;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: #00f3ff;
+      }
+      
+      .no-scrollbar::-webkit-scrollbar {
+        display: none;
+      }
+      .no-scrollbar {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+      }
+    </style>
+  <script type="importmap">
+{
+  "imports": {
+    "lucide-react": "https://aistudiocdn.com/lucide-react@^0.555.0",
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.1/",
+    "@google/genai": "https://aistudiocdn.com/@google/genai@^1.31.0",
+    "recharts": "https://aistudiocdn.com/recharts@^3.5.1",
+    "react/": "https://aistudiocdn.com/react@^19.2.1/",
+    "react": "https://aistudiocdn.com/react@^19.2.1"
+  }
+}
+</script>
+</head>
+  <body>
+    <div id="root"></div>
+  </body>
+</html>
