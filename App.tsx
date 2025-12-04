@@ -1,11 +1,14 @@
-import React, { useState, useEffect } from 'react';
-import { Home, ShoppingBag, User as UserIcon, Hexagon, Bot, Heart, MapPin, Zap, Bell, Settings as SettingsIcon, LogOut, Gavel, Sun, Moon, Plus, Search, MessageCircle } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Home, ShoppingBag, User as UserIcon, Hexagon, Bot, Heart, MapPin, Zap, Bell, Settings as SettingsIcon, LogOut, Gavel, Sun, Moon, Plus, Search, MessageCircle, MessageSquareText, Check, X, ChevronRight, Megaphone, ArrowRight, ExternalLink } from 'lucide-react';
 import Marketplace from './components/Marketplace';
 import Feed from './components/Feed';
 import VehicleDetail from './components/VehicleDetail';
 import AIChatBot from './components/AIChatBot';
 import Settings from './components/Settings';
 import CreateListing from './components/CreateListing';
+import Inbox from './components/Inbox';
+import NotificationsPage from './components/NotificationsPage';
+import Profile from './components/Profile';
 import { ViewState, Vehicle, User } from './types';
 import { MOCK_USER, VEHICLES as INITIAL_VEHICLES } from './constants';
 import { analyzeMarketTrends } from './services/geminiService';
@@ -43,8 +46,30 @@ const App: React.FC = () => {
   const [isDark, setIsDark] = useState(true);
   const [vehicles, setVehicles] = useState<Vehicle[]>(INITIAL_VEHICLES);
 
+  // Header Interactions State
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [showMessagesMenu, setShowMessagesMenu] = useState(false);
+
+  // Refs for click outside
+  const notificationRef = useRef<HTMLDivElement>(null);
+  const messageRef = useRef<HTMLDivElement>(null);
+
   useEffect(() => {
     analyzeMarketTrends().then(setMarketTicker);
+
+    const handleClickOutside = (event: MouseEvent) => {
+      if (notificationRef.current && !notificationRef.current.contains(event.target as Node)) {
+        setShowNotifications(false);
+      }
+      if (messageRef.current && !messageRef.current.contains(event.target as Node)) {
+        setShowMessagesMenu(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
   const handleVehicleSelect = (vehicle: Vehicle) => {
@@ -64,7 +89,6 @@ const App: React.FC = () => {
   const handleCreateListing = (newVehicle: Vehicle) => {
     setVehicles(prev => [newVehicle, ...prev]);
     setView(ViewState.MARKETPLACE);
-    // Optional: Show success notification logic here
   };
 
   const toggleTheme = () => setIsDark(!isDark);
@@ -74,6 +98,19 @@ const App: React.FC = () => {
         setView(ViewState.FEED);
     }
   };
+
+  // Mock Data for Dropdowns
+  const NOTIFICATIONS = [
+    { id: 1, text: "Tesla Cybertruck price dropped by 5%", time: "10m", type: "alert", read: false },
+    { id: 2, text: "@driftking_alex liked your post", time: "1h", type: "social", read: true },
+    { id: 3, text: "Auction for R1M ending in 30 mins", time: "2h", type: "urgent", read: false },
+  ];
+
+  const DIRECT_MESSAGES = [
+    { id: 1, user: "Sarah Connor", text: "Is the flux capacitor still available?", time: "5m", unread: 2, avatar: "https://picsum.photos/seed/sarah/100/100" },
+    { id: 2, user: "SpeedDemon", text: "Let's race tonight.", time: "1h", unread: 0, avatar: "https://picsum.photos/seed/speedy/100/100" },
+    { id: 3, user: "EuroImports", text: "Order shipped.", time: "1d", unread: 0, avatar: "https://picsum.photos/seed/porsche/100/100" },
+  ];
 
   const renderContent = () => {
     switch (view) {
@@ -93,89 +130,21 @@ const App: React.FC = () => {
         return <Settings user={MOCK_USER} isDark={isDark} toggleTheme={toggleTheme} onLogout={handleLogout} />;
       case ViewState.CREATE_LISTING:
         return <CreateListing onCancel={() => setView(ViewState.MARKETPLACE)} onSubmit={handleCreateListing} user={MOCK_USER} />;
+      case ViewState.MESSAGES:
+        return <Inbox currentUser={MOCK_USER} onBack={() => setView(ViewState.FEED)} />;
+      case ViewState.NOTIFICATIONS:
+        return <NotificationsPage onBack={() => setView(ViewState.FEED)} />;
       case ViewState.PROFILE:
-        const wishlistedVehicles = vehicles.filter(v => wishlist.has(v.id));
         return (
-          <div className="space-y-8 pb-24 max-w-5xl mx-auto animate-slide-up">
-            <div className="glass rounded-3xl p-8 relative overflow-hidden group">
-               <div className="absolute top-0 right-0 p-32 bg-neon-blue/5 rounded-full blur-3xl group-hover:bg-neon-blue/10 transition-colors" />
-               <div className="relative z-10 flex flex-col md:flex-row items-center gap-8">
-                 <div className="relative">
-                   <div className="w-32 h-32 rounded-full p-1 bg-gradient-to-tr from-neon-blue to-neon-purple shadow-[0_0_30px_rgba(0,243,255,0.3)]">
-                     <img src={MOCK_USER.avatar} className="w-full h-full rounded-full object-cover border-4 border-theme-bg" alt="Profile" />
-                   </div>
-                   <div className="absolute -bottom-2 -right-2 bg-theme-card p-1.5 rounded-full border border-theme-border">
-                     <div className="bg-neon-green w-4 h-4 rounded-full animate-pulse shadow-[0_0_10px_#0aff68]" />
-                   </div>
-                 </div>
-                 <div className="text-center md:text-left">
-                   <h2 className="text-4xl font-display font-bold text-theme-text mb-2">{MOCK_USER.name}</h2>
-                   <p className="font-mono text-neon-blue mb-4 tracking-wider">{MOCK_USER.handle}</p>
-                   <div className="flex gap-8 justify-center md:justify-start">
-                     <div className="text-center">
-                       <span className="block text-2xl font-bold text-theme-text">{wishlistedVehicles.length}</span>
-                       <span className="text-xs font-bold text-theme-muted tracking-widest">SAVED</span>
-                     </div>
-                     <div className="text-center">
-                       <span className="block text-2xl font-bold text-theme-text">12</span>
-                       <span className="text-xs font-bold text-theme-muted tracking-widest">POSTS</span>
-                     </div>
-                     <div className="text-center">
-                       <span className="block text-2xl font-bold text-theme-text">4.9</span>
-                       <span className="text-xs font-bold text-theme-muted tracking-widest">RATING</span>
-                     </div>
-                   </div>
-                 </div>
-                 <div className="md:ml-auto">
-                    <button className="px-6 py-3 bg-theme-surface border border-theme-border rounded-xl font-bold text-theme-text hover:border-neon-purple transition-all shadow-sm">
-                      Edit Profile
-                    </button>
-                 </div>
-               </div>
-            </div>
-
-            <div>
-              <h3 className="text-xl font-display font-bold text-theme-text mb-6 flex items-center gap-3">
-                <span className="w-8 h-1 bg-neon-purple rounded-full" />
-                Wishlist
-              </h3>
-              
-              {wishlistedVehicles.length === 0 ? (
-                <div className="glass-card rounded-2xl p-12 text-center text-theme-muted border-dashed border-2">
-                  <Heart className="w-16 h-16 mx-auto mb-4 opacity-20" />
-                  <p className="text-lg">Your garage is empty.</p>
-                  <button onClick={() => setView(ViewState.MARKETPLACE)} className="mt-6 text-neon-blue font-bold hover:underline">
-                    Browse Vehicles
-                  </button>
-                </div>
-              ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {wishlistedVehicles.map((vehicle) => (
-                    <div
-                      key={vehicle.id}
-                      onClick={() => handleVehicleSelect(vehicle)}
-                      className="group glass-card rounded-2xl overflow-hidden cursor-pointer transition-all hover:border-neon-purple/50 hover:shadow-[0_0_20px_rgba(188,19,254,0.1)]"
-                    >
-                      <div className="relative h-48">
-                        <img src={vehicle.image} alt={vehicle.model} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
-                        <div className="absolute inset-0 bg-gradient-to-t from-theme-bg to-transparent opacity-80" />
-                        <div className="absolute bottom-4 left-4">
-                          <h4 className="font-bold text-theme-text text-lg">{vehicle.model}</h4>
-                          <p className="text-neon-blue text-sm font-mono">${vehicle.price.toLocaleString()}</p>
-                        </div>
-                        <button
-                          onClick={(e) => { e.stopPropagation(); toggleWishlist(vehicle.id); }}
-                          className="absolute top-3 right-3 p-2 rounded-full bg-black/40 backdrop-blur-md hover:bg-neon-purple hover:text-white transition-all text-neon-purple"
-                        >
-                          <Heart className="w-4 h-4 fill-current" />
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
+          <Profile 
+            user={MOCK_USER} 
+            currentUser={MOCK_USER}
+            vehicles={vehicles}
+            wishlist={wishlist}
+            onSelectVehicle={handleVehicleSelect}
+            onToggleWishlist={toggleWishlist}
+            onCreateListing={() => setView(ViewState.CREATE_LISTING)}
+          />
         );
       default: return <Feed />;
     }
@@ -210,8 +179,8 @@ const App: React.FC = () => {
               
               <div className="px-4 py-2 text-xs font-bold text-theme-muted/50 tracking-widest mt-6 mb-1">PERSONAL</div>
               <SidebarItem icon={<UserIcon />} label="Profile" active={view === ViewState.PROFILE} onClick={() => setView(ViewState.PROFILE)} />
-              <SidebarItem icon={<Heart />} label="Wishlist" active={false} onClick={() => setView(ViewState.PROFILE)} />
-              <SidebarItem icon={<Gavel />} label="Bids" active={false} onClick={() => {}} badge="Live" />
+              <SidebarItem icon={<MessageSquareText />} label="Inbox" active={view === ViewState.MESSAGES} onClick={() => setView(ViewState.MESSAGES)} />
+              <SidebarItem icon={<Bell />} label="Activity" active={view === ViewState.NOTIFICATIONS} onClick={() => setView(ViewState.NOTIFICATIONS)} />
               
               <div className="px-4 py-2 text-xs font-bold text-theme-muted/50 tracking-widest mt-6 mb-1">SYSTEM</div>
               <SidebarItem icon={<SettingsIcon />} label="Settings" active={view === ViewState.SETTINGS} onClick={() => setView(ViewState.SETTINGS)} />
@@ -257,21 +226,147 @@ const App: React.FC = () => {
                 <span className="font-display font-bold">HYPERDRIVE</span>
               </div>
 
-              {/* Ticker */}
-              <div className="hidden md:flex items-center gap-3 flex-1 max-w-2xl mx-6 overflow-hidden">
-                <Zap className="w-4 h-4 text-neon-green shrink-0 animate-pulse" />
-                <span className="text-xs font-mono text-theme-muted truncate">{marketTicker}</span>
+              {/* Announcement Banner */}
+              <div className={`hidden md:flex items-center justify-center flex-1 px-4 transition-all duration-300 ${isSearchOpen ? 'opacity-0 scale-95 pointer-events-none' : 'opacity-100 scale-100'}`}>
+                  <div className="bg-theme-surface/80 backdrop-blur-md border border-neon-green/30 px-4 py-1.5 rounded-full flex items-center gap-3 shadow-[0_0_15px_rgba(10,255,104,0.1)] max-w-lg w-full relative overflow-hidden group hover:border-neon-green/60 transition-colors cursor-default">
+                      <div className="shrink-0 flex items-center gap-2 pr-3 border-r border-theme-border/50">
+                          <Megaphone className="w-4 h-4 text-neon-green animate-pulse" />
+                          <span className="text-[10px] font-bold text-neon-green tracking-wider uppercase">System</span>
+                      </div>
+                      <div className="flex-1 overflow-hidden">
+                           <p className="text-xs text-theme-text font-medium truncate group-hover:whitespace-normal transition-all">
+                              {marketTicker}
+                           </p>
+                      </div>
+                  </div>
               </div>
 
               {/* Right Actions */}
-              <div className="flex items-center gap-4">
-                <div className="relative">
-                  <Search className="w-5 h-5 text-theme-muted hover:text-theme-text cursor-pointer transition-colors" />
+              <div className="flex items-center gap-2 md:gap-4 ml-auto">
+                
+                {/* Search */}
+                <div className={`flex items-center bg-theme-surface/50 rounded-full transition-all duration-300 relative ${isSearchOpen ? 'w-48 pl-3 pr-2 py-1.5 border border-theme-border bg-theme-card' : 'w-8 h-8 justify-center bg-transparent'}`}>
+                    {isSearchOpen ? (
+                        <Search className="w-4 h-4 text-theme-muted shrink-0" />
+                    ) : (
+                        <Search 
+                            onClick={() => { setIsSearchOpen(true); }}
+                            className="w-5 h-5 text-theme-muted hover:text-theme-text cursor-pointer transition-colors" 
+                        />
+                    )}
+                    
+                    {isSearchOpen && (
+                        <>
+                            <input 
+                                autoFocus
+                                className="bg-transparent border-none outline-none text-sm ml-2 w-full text-theme-text placeholder:text-theme-muted/50"
+                                placeholder="Search..."
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                onBlur={() => !searchQuery && setIsSearchOpen(false)}
+                            />
+                            <button onClick={() => setIsSearchOpen(false)} className="p-0.5 hover:bg-theme-surface rounded-full">
+                                <X className="w-3 h-3 text-theme-muted" />
+                            </button>
+                        </>
+                    )}
                 </div>
-                <div className="relative">
-                  <Bell className="w-5 h-5 text-theme-muted hover:text-theme-text cursor-pointer transition-colors" />
-                  <span className="absolute top-0 right-0 w-2 h-2 bg-neon-pink rounded-full border border-theme-bg" />
+
+                {/* Messages Dropdown */}
+                <div className="relative" ref={messageRef}>
+                   <button 
+                      onClick={() => { setShowMessagesMenu(!showMessagesMenu); setShowNotifications(false); }}
+                      className={`relative p-1.5 rounded-full transition-colors ${showMessagesMenu || view === ViewState.MESSAGES ? 'bg-theme-card text-neon-blue' : 'text-theme-muted hover:text-theme-text'}`}
+                   >
+                      <MessageSquareText className="w-5 h-5" />
+                      <span className="absolute top-0.5 right-0.5 w-2 h-2 bg-neon-blue rounded-full border border-theme-bg" />
+                   </button>
+
+                   {/* Modern Dropdown */}
+                   {showMessagesMenu && (
+                      <div className="absolute top-full right-0 mt-4 w-96 bg-theme-card border border-theme-border rounded-2xl shadow-2xl overflow-hidden animate-in fade-in slide-in-from-top-2 origin-top-right ring-1 ring-white/5">
+                          <div className="p-4 border-b border-theme-border bg-theme-surface/50 backdrop-blur-md flex justify-between items-center">
+                             <h3 className="font-display font-bold text-sm text-theme-text tracking-wide">MESSAGES</h3>
+                             <button className="text-xs font-bold text-neon-blue hover:text-white bg-neon-blue/10 hover:bg-neon-blue px-2 py-1 rounded transition-colors">
+                                + New
+                             </button>
+                          </div>
+                          <div className="max-h-[300px] overflow-y-auto">
+                              {DIRECT_MESSAGES.map((msg) => (
+                                  <div key={msg.id} className="p-4 hover:bg-white/5 cursor-pointer flex gap-4 transition-colors border-b border-theme-border/30 last:border-0 group relative">
+                                      {msg.unread > 0 && <div className="absolute left-0 top-0 bottom-0 w-1 bg-neon-blue" />}
+                                      <div className="relative shrink-0">
+                                         <img src={msg.avatar} className="w-12 h-12 rounded-full object-cover border border-theme-border group-hover:border-neon-blue transition-colors" alt="avatar" />
+                                         <div className="absolute bottom-0 right-0 w-3 h-3 bg-neon-green rounded-full border-2 border-theme-card" />
+                                      </div>
+                                      <div className="flex-1 min-w-0">
+                                          <div className="flex justify-between items-baseline mb-0.5">
+                                              <span className={`text-sm truncate ${msg.unread > 0 ? 'font-bold text-white' : 'font-medium text-theme-text'}`}>{msg.user}</span>
+                                              <span className="text-[10px] text-theme-muted">{msg.time} ago</span>
+                                          </div>
+                                          <p className={`text-xs truncate ${msg.unread > 0 ? 'text-theme-text font-medium' : 'text-theme-muted'}`}>
+                                              {msg.text}
+                                          </p>
+                                      </div>
+                                  </div>
+                              ))}
+                          </div>
+                          <button 
+                            onClick={() => { setView(ViewState.MESSAGES); setShowMessagesMenu(false); }}
+                            className="w-full p-3 text-xs font-bold text-theme-muted hover:text-theme-text hover:bg-theme-surface transition-colors flex items-center justify-center gap-2 border-t border-theme-border"
+                          >
+                              Open Inbox <ArrowRight className="w-3 h-3" />
+                          </button>
+                      </div>
+                   )}
                 </div>
+
+                {/* Notifications Dropdown */}
+                <div className="relative" ref={notificationRef}>
+                  <button 
+                     onClick={() => { setShowNotifications(!showNotifications); setShowMessagesMenu(false); }}
+                     className={`relative p-1.5 rounded-full transition-colors ${showNotifications || view === ViewState.NOTIFICATIONS ? 'bg-theme-surface text-neon-pink' : 'text-theme-muted hover:text-theme-text'}`}
+                  >
+                    <Bell className="w-5 h-5" />
+                    <span className="absolute top-0.5 right-0.5 w-2 h-2 bg-neon-pink rounded-full border border-theme-bg animate-pulse" />
+                  </button>
+
+                  {/* Modern Dropdown */}
+                  {showNotifications && (
+                      <div className="absolute top-full right-0 mt-4 w-80 glass rounded-2xl border border-theme-border shadow-2xl overflow-hidden animate-in fade-in slide-in-from-top-2 origin-top-right ring-1 ring-white/5">
+                          <div className="p-4 border-b border-theme-border bg-theme-surface/50 backdrop-blur-md flex justify-between items-center">
+                             <h3 className="font-display font-bold text-sm text-theme-text tracking-wide">ACTIVITY</h3>
+                             <button className="text-xs text-theme-muted hover:text-theme-text transition-colors">Mark all read</button>
+                          </div>
+                          <div className="max-h-[300px] overflow-y-auto">
+                              {NOTIFICATIONS.map((notif) => (
+                                  <div key={notif.id} className="p-4 hover:bg-white/5 cursor-pointer flex gap-3 transition-colors border-b border-theme-border/30 last:border-0 relative group">
+                                      <div className={`mt-1 p-2 rounded-xl h-fit shrink-0 ${
+                                          notif.type === 'alert' ? 'bg-neon-pink/10 text-neon-pink' : 
+                                          notif.type === 'urgent' ? 'bg-red-500/10 text-red-500' : 'bg-neon-blue/10 text-neon-blue'
+                                      }`}>
+                                          {notif.type === 'alert' ? <Zap className="w-4 h-4" /> : notif.type === 'urgent' ? <Gavel className="w-4 h-4" /> : <Heart className="w-4 h-4" />}
+                                      </div>
+                                      <div className="flex-1">
+                                          <p className={`text-xs leading-relaxed ${!notif.read ? 'font-bold text-theme-text' : 'text-theme-muted'}`}>
+                                              {notif.text}
+                                          </p>
+                                          <span className="text-[10px] text-theme-muted/60 mt-1 block">{notif.time} ago</span>
+                                      </div>
+                                      {!notif.read && <div className="absolute right-3 top-4 w-1.5 h-1.5 rounded-full bg-neon-pink shadow-[0_0_5px_rgba(255,0,153,0.5)]" />}
+                                  </div>
+                              ))}
+                          </div>
+                          <button 
+                             onClick={() => { setView(ViewState.NOTIFICATIONS); setShowNotifications(false); }}
+                             className="w-full p-3 text-xs font-bold text-theme-muted hover:text-theme-text hover:bg-theme-surface transition-colors flex items-center justify-center gap-2 border-t border-theme-border"
+                          >
+                              View All Activity <ExternalLink className="w-3 h-3" />
+                          </button>
+                      </div>
+                   )}
+                </div>
+
                 <button 
                   onClick={() => setView(ViewState.CREATE_LISTING)}
                   className="hidden md:flex items-center gap-2 bg-neon-blue hover:bg-cyan-400 text-black px-4 py-1.5 rounded-full font-bold text-sm transition-all shadow-[0_0_15px_rgba(0,243,255,0.3)] hover:shadow-[0_0_25px_rgba(0,243,255,0.5)]"
