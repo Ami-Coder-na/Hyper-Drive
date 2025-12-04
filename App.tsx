@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Home, ShoppingBag, User as UserIcon, Hexagon, Bot, Heart, MapPin, Zap, Bell, Settings as SettingsIcon, LogOut, Gavel, Sun, Moon, Plus, Search } from 'lucide-react';
+import { Home, ShoppingBag, User as UserIcon, Hexagon, Bot, Heart, MapPin, Zap, Bell, Settings as SettingsIcon, LogOut, Gavel, Sun, Moon, Plus, Search, MessageCircle } from 'lucide-react';
 import Marketplace from './components/Marketplace';
 import Feed from './components/Feed';
 import VehicleDetail from './components/VehicleDetail';
@@ -302,9 +302,10 @@ const App: React.FC = () => {
         {/* AI Assistant */}
         <button
           onClick={() => setShowChat(!showChat)}
-          className="fixed bottom-24 md:bottom-8 right-4 md:right-8 bg-gradient-to-r from-neon-purple to-fuchsia-600 text-white p-4 rounded-2xl shadow-[0_0_30px_rgba(188,19,254,0.4)] z-50 transition-all hover:scale-105 hover:rotate-3 active:scale-95 group"
+          className="fixed bottom-24 md:bottom-8 right-4 md:right-8 bg-gradient-to-r from-neon-purple to-fuchsia-600 text-white p-4 rounded-2xl shadow-[0_0_30px_rgba(188,19,254,0.4)] z-50 transition-all hover:scale-105 hover:rotate-3 active:scale-95 group flex items-center gap-2"
         >
-          <Bot className="w-6 h-6 group-hover:animate-bounce" />
+          {showChat ? <MessageCircle className="w-6 h-6" /> : <Bot className="w-6 h-6 group-hover:animate-bounce" />}
+          <span className="hidden md:inline font-bold pr-1">AI Chat</span>
         </button>
         {showChat && <AIChatBot onClose={() => setShowChat(false)} />}
 
