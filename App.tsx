@@ -5,8 +5,9 @@ import Feed from './components/Feed';
 import VehicleDetail from './components/VehicleDetail';
 import AIChatBot from './components/AIChatBot';
 import Settings from './components/Settings';
+import CreateListing from './components/CreateListing';
 import { ViewState, Vehicle, User } from './types';
-import { MOCK_USER, VEHICLES } from './constants';
+import { MOCK_USER, VEHICLES as INITIAL_VEHICLES } from './constants';
 import { analyzeMarketTrends } from './services/geminiService';
 
 const SidebarItem = ({ icon, label, active, onClick, badge }: any) => (
@@ -40,6 +41,7 @@ const App: React.FC = () => {
   const [marketTicker, setMarketTicker] = useState<string>("Initializing secure connection...");
   const [wishlist, setWishlist] = useState<Set<string>>(new Set());
   const [isDark, setIsDark] = useState(true);
+  const [vehicles, setVehicles] = useState<Vehicle[]>(INITIAL_VEHICLES);
 
   useEffect(() => {
     analyzeMarketTrends().then(setMarketTicker);
@@ -59,6 +61,12 @@ const App: React.FC = () => {
     });
   };
 
+  const handleCreateListing = (newVehicle: Vehicle) => {
+    setVehicles(prev => [newVehicle, ...prev]);
+    setView(ViewState.MARKETPLACE);
+    // Optional: Show success notification logic here
+  };
+
   const toggleTheme = () => setIsDark(!isDark);
 
   const handleLogout = () => {
@@ -71,7 +79,7 @@ const App: React.FC = () => {
     switch (view) {
       case ViewState.FEED: return <Feed />;
       case ViewState.MARKETPLACE:
-        return <Marketplace onSelectVehicle={handleVehicleSelect} wishlist={wishlist} onToggleWishlist={toggleWishlist} />;
+        return <Marketplace vehicles={vehicles} onSelectVehicle={handleVehicleSelect} wishlist={wishlist} onToggleWishlist={toggleWishlist} />;
       case ViewState.VEHICLE_DETAIL:
         return selectedVehicle ? (
           <VehicleDetail 
@@ -80,11 +88,13 @@ const App: React.FC = () => {
             isWishlisted={wishlist.has(selectedVehicle.id)}
             onToggleWishlist={() => toggleWishlist(selectedVehicle.id)}
           />
-        ) : <Marketplace onSelectVehicle={handleVehicleSelect} wishlist={wishlist} onToggleWishlist={toggleWishlist} />;
+        ) : <Marketplace vehicles={vehicles} onSelectVehicle={handleVehicleSelect} wishlist={wishlist} onToggleWishlist={toggleWishlist} />;
       case ViewState.SETTINGS:
         return <Settings user={MOCK_USER} isDark={isDark} toggleTheme={toggleTheme} onLogout={handleLogout} />;
+      case ViewState.CREATE_LISTING:
+        return <CreateListing onCancel={() => setView(ViewState.MARKETPLACE)} onSubmit={handleCreateListing} user={MOCK_USER} />;
       case ViewState.PROFILE:
-        const wishlistedVehicles = VEHICLES.filter(v => wishlist.has(v.id));
+        const wishlistedVehicles = vehicles.filter(v => wishlist.has(v.id));
         return (
           <div className="space-y-8 pb-24 max-w-5xl mx-auto animate-slide-up">
             <div className="glass rounded-3xl p-8 relative overflow-hidden group">
@@ -262,7 +272,10 @@ const App: React.FC = () => {
                   <Bell className="w-5 h-5 text-theme-muted hover:text-theme-text cursor-pointer transition-colors" />
                   <span className="absolute top-0 right-0 w-2 h-2 bg-neon-pink rounded-full border border-theme-bg" />
                 </div>
-                <button className="hidden md:flex items-center gap-2 bg-neon-blue hover:bg-cyan-400 text-black px-4 py-1.5 rounded-full font-bold text-sm transition-all shadow-[0_0_15px_rgba(0,243,255,0.3)] hover:shadow-[0_0_25px_rgba(0,243,255,0.5)]">
+                <button 
+                  onClick={() => setView(ViewState.CREATE_LISTING)}
+                  className="hidden md:flex items-center gap-2 bg-neon-blue hover:bg-cyan-400 text-black px-4 py-1.5 rounded-full font-bold text-sm transition-all shadow-[0_0_15px_rgba(0,243,255,0.3)] hover:shadow-[0_0_25px_rgba(0,243,255,0.5)]"
+                >
                   <Plus className="w-4 h-4" />
                   <span>Create Listing</span>
                 </button>
@@ -279,7 +292,10 @@ const App: React.FC = () => {
         {/* Global Floating Elements */}
         
         {/* Mobile Create Button */}
-        <button className="md:hidden fixed bottom-24 right-4 bg-neon-blue text-black p-4 rounded-full shadow-lg z-50">
+        <button 
+          onClick={() => setView(ViewState.CREATE_LISTING)}
+          className="md:hidden fixed bottom-24 right-4 bg-neon-blue text-black p-4 rounded-full shadow-lg z-50 transition-transform active:scale-95"
+        >
           <Plus className="w-6 h-6" />
         </button>
 

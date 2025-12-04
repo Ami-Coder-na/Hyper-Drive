@@ -4,7 +4,8 @@ export enum ViewState {
   PROFILE = 'PROFILE',
   VEHICLE_DETAIL = 'VEHICLE_DETAIL',
   AI_CHAT = 'AI_CHAT',
-  SETTINGS = 'SETTINGS'
+  SETTINGS = 'SETTINGS',
+  CREATE_LISTING = 'CREATE_LISTING'
 }
 
 export interface User {

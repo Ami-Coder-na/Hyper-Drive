@@ -1,15 +1,15 @@
 import React, { useState } from 'react';
-import { Search, Filter, Zap, MapPin, Heart, ShoppingCart, Check, SlidersHorizontal, ArrowRight, Scale, X, Trash2 } from 'lucide-react';
-import { VEHICLES } from '../constants';
+import { Search, Filter, Zap, MapPin, Heart, ShoppingCart, Check, SlidersHorizontal, Scale, X, Trash2 } from 'lucide-react';
 import { Vehicle } from '../types';
 
 interface MarketplaceProps {
+  vehicles: Vehicle[];
   onSelectVehicle: (vehicle: Vehicle) => void;
   wishlist: Set<string>;
   onToggleWishlist: (id: string) => void;
 }
 
-const Marketplace: React.FC<MarketplaceProps> = ({ onSelectVehicle, wishlist, onToggleWishlist }) => {
+const Marketplace: React.FC<MarketplaceProps> = ({ vehicles, onSelectVehicle, wishlist, onToggleWishlist }) => {
   const [filter, setFilter] = useState<'ALL' | 'CAR' | 'BIKE' | 'EV' | 'PART'>('ALL');
   const [searchTerm, setSearchTerm] = useState('');
   const [cartFeedback, setCartFeedback] = useState<Set<string>>(new Set());
@@ -55,14 +55,14 @@ const Marketplace: React.FC<MarketplaceProps> = ({ onSelectVehicle, wishlist, on
     setShowCompareModal(false);
   };
 
-  const filteredVehicles = VEHICLES.filter(v => {
+  const filteredVehicles = vehicles.filter(v => {
     const matchesFilter = filter === 'ALL' || v.type === filter;
     const matchesSearch = v.make.toLowerCase().includes(searchTerm.toLowerCase()) || 
                           v.model.toLowerCase().includes(searchTerm.toLowerCase());
     return matchesFilter && matchesSearch;
   });
 
-  const compareVehicles = VEHICLES.filter(v => compareList.has(v.id));
+  const compareVehicles = vehicles.filter(v => compareList.has(v.id));
 
   return (
     <div className="space-y-8 pb-32 max-w-7xl mx-auto animate-slide-up relative">
@@ -146,18 +146,6 @@ const Marketplace: React.FC<MarketplaceProps> = ({ onSelectVehicle, wishlist, on
                     >
                         <Heart className={`w-4 h-4 ${wishlist.has(vehicle.id) ? 'fill-current' : ''}`} />
                     </button>
-                    
-                    <button
-                        onClick={(e) => toggleCompare(e, vehicle.id)}
-                        className={`p-2 rounded-full backdrop-blur-md transition-all ${
-                            compareList.has(vehicle.id)
-                                ? 'bg-neon-blue text-black shadow-[0_0_10px_#00f3ff]'
-                                : 'bg-black/30 text-white/70 hover:bg-neon-blue hover:text-black'
-                        }`}
-                        title="Compare"
-                    >
-                        <Scale className="w-4 h-4" />
-                    </button>
                 </div>
             </div>
 
@@ -195,8 +183,16 @@ const Marketplace: React.FC<MarketplaceProps> = ({ onSelectVehicle, wishlist, on
                          {cartFeedback.has(vehicle.id) ? <Check className="w-4 h-4" /> : <ShoppingCart className="w-4 h-4" />}
                          {cartFeedback.has(vehicle.id) ? 'ADDED' : 'ADD TO CART'}
                     </button>
-                    <button className="px-3 py-2.5 rounded-xl bg-theme-surface border border-theme-border text-theme-text hover:bg-theme-text hover:text-theme-bg transition-colors">
-                        <ArrowRight className="w-4 h-4" />
+                    <button 
+                        onClick={(e) => toggleCompare(e, vehicle.id)}
+                        className={`px-3 py-2.5 rounded-xl border border-theme-border transition-all flex items-center justify-center gap-2 ${
+                            compareList.has(vehicle.id) 
+                            ? 'bg-neon-blue text-black border-neon-blue' 
+                            : 'bg-theme-surface text-theme-text hover:border-neon-blue hover:text-neon-blue'
+                        }`}
+                        title={compareList.has(vehicle.id) ? "Remove from comparison" : "Compare"}
+                    >
+                        <Scale className="w-4 h-4" />
                     </button>
                 </div>
             </div>

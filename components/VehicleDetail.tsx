@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { Vehicle } from '../types';
-import { ChevronLeft, Rotate3D, ShieldCheck, Zap, MessageCircle, Heart } from 'lucide-react';
+import { ChevronLeft, ShieldCheck, Zap, MessageCircle, Heart, Image as ImageIcon, Box } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { generateVehicleInsight } from '../services/geminiService';
+import ThreeDViewer from './ThreeDViewer';
 
 interface VehicleDetailProps {
   vehicle: Vehicle;
@@ -12,10 +13,10 @@ interface VehicleDetailProps {
 }
 
 const VehicleDetail: React.FC<VehicleDetailProps> = ({ vehicle, onBack, isWishlisted, onToggleWishlist }) => {
-  const [rotation, setRotation] = useState(0);
   const [aiAnalysis, setAiAnalysis] = useState<string>('');
   const [loadingAi, setLoadingAi] = useState(false);
   const [activeTab, setActiveTab] = useState<'STATS' | 'HISTORY'>('STATS');
+  const [viewMode, setViewMode] = useState<'3D' | 'IMAGE'>('3D');
 
   const handleAiAnalysis = async () => {
     if (aiAnalysis) return;
@@ -42,36 +43,45 @@ const VehicleDetail: React.FC<VehicleDetailProps> = ({ vehicle, onBack, isWishli
         {/* Visualizer Section */}
         <div className="space-y-4">
           <div className="relative aspect-[4/3] bg-theme-card rounded-2xl overflow-hidden border border-theme-border group">
-            <img 
-              src={vehicle.image} 
-              alt={vehicle.model}
-              className="w-full h-full object-cover transition-transform duration-700"
-              style={{ transform: `scale(1.1) rotateY(${rotation}deg)` }}
-            />
             
-            {/* 3D Controls Overlay */}
-            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-4 bg-black/50 backdrop-blur-md p-2 rounded-full border border-white/10">
-              <button 
-                onClick={() => setRotation(r => r - 45)}
-                className="p-2 hover:bg-neon-blue/20 rounded-full text-white transition-colors"
-              >
-                <Rotate3D className="w-5 h-5" />
-              </button>
-              <span className="text-xs self-center text-neon-blue font-mono">360° VIEW</span>
-               <button 
-                onClick={() => setRotation(r => r + 45)}
-                className="p-2 hover:bg-neon-blue/20 rounded-full text-white transition-colors"
-              >
-                <Rotate3D className="w-5 h-5 scale-x-[-1]" />
-              </button>
+            {viewMode === 'IMAGE' ? (
+                <div className="w-full h-full relative">
+                    <img 
+                    src={vehicle.image} 
+                    alt={vehicle.model}
+                    className="w-full h-full object-cover transition-transform duration-700 hover:scale-105"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-theme-card/50 via-transparent to-transparent opacity-60 pointer-events-none" />
+                </div>
+            ) : (
+                <div className="w-full h-full bg-gradient-to-b from-slate-900 to-black relative">
+                    <div className="absolute inset-0 bg-[linear-gradient(rgba(0,243,255,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(0,243,255,0.03)_1px,transparent_1px)] bg-[size:20px_20px] pointer-events-none" />
+                    <ThreeDViewer type={vehicle.type} />
+                </div>
+            )}
+
+            {/* View Toggle */}
+            <div className="absolute top-4 left-4 flex p-1 bg-black/60 backdrop-blur-md rounded-lg border border-white/10 z-10">
+                <button 
+                    onClick={() => setViewMode('3D')}
+                    className={`p-2 rounded-md transition-all flex items-center gap-2 text-xs font-bold ${viewMode === '3D' ? 'bg-neon-blue text-black shadow-lg' : 'text-white/70 hover:text-white'}`}
+                >
+                    <Box className="w-4 h-4" /> 3D MODEL
+                </button>
+                <button 
+                    onClick={() => setViewMode('IMAGE')}
+                    className={`p-2 rounded-md transition-all flex items-center gap-2 text-xs font-bold ${viewMode === 'IMAGE' ? 'bg-neon-blue text-black shadow-lg' : 'text-white/70 hover:text-white'}`}
+                >
+                    <ImageIcon className="w-4 h-4" /> PHOTOS
+                </button>
             </div>
           </div>
 
           {/* Thumbnails (Mock) */}
           <div className="grid grid-cols-4 gap-2">
             {[1, 2, 3, 4].map(i => (
-              <div key={i} className="aspect-square rounded-lg bg-theme-card border border-theme-border overflow-hidden cursor-pointer hover:border-neon-blue">
-                <img src={vehicle.image} className="w-full h-full object-cover opacity-50 hover:opacity-100 transition-opacity" alt="thumb" />
+              <div key={i} className="aspect-square rounded-lg bg-theme-card border border-theme-border overflow-hidden cursor-pointer hover:border-neon-blue hover:shadow-[0_0_10px_rgba(0,243,255,0.3)] transition-all">
+                <img src={vehicle.image} className="w-full h-full object-cover opacity-60 hover:opacity-100 transition-opacity grayscale hover:grayscale-0" alt="thumb" />
               </div>
             ))}
           </div>
@@ -100,7 +110,7 @@ const VehicleDetail: React.FC<VehicleDetailProps> = ({ vehicle, onBack, isWishli
           </div>
 
           {/* Stats / Tabs */}
-          <div className="bg-theme-card border border-theme-border rounded-xl p-6 space-y-4">
+          <div className="bg-theme-card border border-theme-border rounded-xl p-6 space-y-4 shadow-sm">
             <div className="flex gap-4 border-b border-theme-border pb-2">
               <button 
                 onClick={() => setActiveTab('STATS')}
@@ -157,20 +167,21 @@ const VehicleDetail: React.FC<VehicleDetailProps> = ({ vehicle, onBack, isWishli
           </div>
 
           {/* AI Insight */}
-          <div className="bg-gradient-to-br from-indigo-900/40 to-purple-900/40 border border-indigo-500/30 rounded-xl p-5">
-            <div className="flex items-center gap-2 mb-3">
+          <div className="bg-gradient-to-br from-indigo-900/40 to-purple-900/40 border border-indigo-500/30 rounded-xl p-5 relative overflow-hidden">
+            <div className="absolute top-0 right-0 p-10 bg-neon-purple/5 blur-2xl rounded-full pointer-events-none" />
+            <div className="flex items-center gap-2 mb-3 relative z-10">
               <div className="p-1.5 bg-indigo-500 rounded-lg">
                 <Zap className="w-4 h-4 text-white" />
               </div>
               <h3 className="font-bold text-indigo-100">AI Mechanic Insight</h3>
             </div>
             {aiAnalysis ? (
-              <p className="text-sm text-indigo-200 animate-in fade-in">{aiAnalysis}</p>
+              <p className="text-sm text-indigo-200 animate-in fade-in relative z-10">{aiAnalysis}</p>
             ) : (
               <button 
                 onClick={handleAiAnalysis}
                 disabled={loadingAi}
-                className="text-sm text-neon-blue hover:text-white hover:underline flex items-center gap-2 disabled:opacity-50"
+                className="text-sm text-neon-blue hover:text-white hover:underline flex items-center gap-2 disabled:opacity-50 relative z-10"
               >
                 {loadingAi ? 'Analyzing Data Stream...' : 'Ask AI to analyze this vehicle'}
               </button>
