@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ChevronLeft, Upload, MapPin, DollarSign, Calendar, Tag, Image as ImageIcon, Zap, AlertCircle } from 'lucide-react';
+import { ChevronLeft, Upload, MapPin, DollarSign, Calendar, Tag, Image as ImageIcon, Zap, AlertCircle, Plus, X, Star } from 'lucide-react';
 import { Vehicle, User } from '../types';
 
 interface CreateListingProps {
@@ -17,8 +17,11 @@ const CreateListing: React.FC<CreateListingProps> = ({ onCancel, onSubmit, user 
     type: 'CAR' as const,
     location: '',
     description: '',
-    image: '',
   });
+
+  // State for multiple images
+  const [images, setImages] = useState<string[]>([]);
+  const [imageUrlInput, setImageUrlInput] = useState('');
 
   const [isLoading, setIsLoading] = useState(false);
 
@@ -27,12 +30,30 @@ const CreateListing: React.FC<CreateListingProps> = ({ onCancel, onSubmit, user 
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
+  const handleAddImage = () => {
+    if (imageUrlInput.trim()) {
+      setImages(prev => [...prev, imageUrlInput.trim()]);
+      setImageUrlInput('');
+    }
+  };
+
+  const handleRemoveImage = (index: number) => {
+    setImages(prev => prev.filter((_, i) => i !== index));
+  };
+
   const handleRandomizeImage = () => {
     const randomId = Math.floor(Math.random() * 1000);
-    setFormData(prev => ({
-      ...prev,
-      image: `https://picsum.photos/seed/${randomId}/800/600`
-    }));
+    const newImage = `https://picsum.photos/seed/${randomId}/800/600`;
+    setImages(prev => [...prev, newImage]);
+  };
+
+  const setAsCover = (index: number) => {
+    setImages(prev => {
+        const newImages = [...prev];
+        const selected = newImages.splice(index, 1)[0];
+        newImages.unshift(selected); // Move to start
+        return newImages;
+    });
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -47,7 +68,8 @@ const CreateListing: React.FC<CreateListingProps> = ({ onCancel, onSubmit, user 
         model: formData.model,
         year: Number(formData.year),
         price: Number(formData.price),
-        image: formData.image || 'https://picsum.photos/800/600',
+        image: images.length > 0 ? images[0] : 'https://picsum.photos/800/600', // Use first image as cover
+        gallery: images, // Store all images
         type: formData.type as any,
         location: formData.location,
         description: formData.description,
@@ -69,7 +91,7 @@ const CreateListing: React.FC<CreateListingProps> = ({ onCancel, onSubmit, user 
   };
 
   return (
-    <div className="max-w-3xl mx-auto pb-24 animate-in slide-in-from-bottom-8 fade-in duration-500">
+    <div className="max-w-4xl mx-auto pb-24 animate-in slide-in-from-bottom-8 fade-in duration-500 px-4">
       <div className="flex items-center gap-4 mb-8">
         <button 
           onClick={onCancel}
@@ -86,41 +108,90 @@ const CreateListing: React.FC<CreateListingProps> = ({ onCancel, onSubmit, user 
       <div className="bg-theme-card border border-theme-border rounded-3xl p-6 md:p-8 shadow-xl">
         <form onSubmit={handleSubmit} className="space-y-8">
             
-            {/* Image Section */}
+            {/* Gallery Section */}
             <div className="space-y-4">
-                <label className="block text-sm font-bold text-theme-text">Vehicle Image</label>
-                <div className="relative aspect-video bg-theme-bg rounded-2xl border-2 border-dashed border-theme-border hover:border-neon-blue transition-colors overflow-hidden group">
-                    {formData.image ? (
-                        <img src={formData.image} alt="Preview" className="w-full h-full object-cover" />
-                    ) : (
-                        <div className="absolute inset-0 flex flex-col items-center justify-center text-theme-muted">
-                            <ImageIcon className="w-10 h-10 mb-2 opacity-50" />
-                            <span className="text-sm font-medium">Preview will appear here</span>
-                        </div>
-                    )}
-                    
-                    <div className="absolute bottom-4 right-4 flex gap-2">
-                         <button 
-                            type="button" 
-                            onClick={handleRandomizeImage}
-                            className="px-4 py-2 bg-theme-card/80 backdrop-blur text-xs font-bold text-theme-text rounded-lg border border-theme-border hover:text-neon-blue transition-colors"
-                        >
-                            Generate Random
-                        </button>
-                    </div>
+                <div className="flex items-center justify-between">
+                    <label className="text-sm font-bold text-theme-text flex items-center gap-2">
+                        <ImageIcon className="w-4 h-4 text-neon-blue" /> Vehicle Gallery
+                        <span className="text-theme-muted font-normal text-xs ml-2">
+                            ({images.length} selected) • First image will be the cover
+                        </span>
+                    </label>
                 </div>
-                <div className="flex gap-2">
-                     <div className="relative flex-1">
+
+                {/* Image Input Bar */}
+                <div className="flex flex-col md:flex-row gap-3">
+                    <div className="relative flex-1">
                         <input
                             type="text"
-                            name="image"
-                            value={formData.image}
-                            onChange={handleChange}
+                            value={imageUrlInput}
+                            onChange={(e) => setImageUrlInput(e.target.value)}
+                            onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddImage())}
                             placeholder="Paste image URL..."
                             className="w-full pl-10 pr-4 py-3 bg-theme-surface border border-theme-border rounded-xl text-sm text-theme-text focus:outline-none focus:border-neon-blue transition-all"
                         />
                         <Upload className="absolute left-3 top-3.5 w-4 h-4 text-theme-muted" />
                     </div>
+                    <button 
+                        type="button"
+                        onClick={handleAddImage}
+                        disabled={!imageUrlInput.trim()}
+                        className="px-6 py-3 bg-theme-surface hover:bg-neon-blue hover:text-black border border-theme-border hover:border-transparent rounded-xl font-bold text-sm transition-all disabled:opacity-50"
+                    >
+                        Add
+                    </button>
+                    <button 
+                        type="button" 
+                        onClick={handleRandomizeImage}
+                        className="px-6 py-3 bg-theme-surface hover:bg-neon-purple hover:text-white border border-theme-border hover:border-transparent rounded-xl font-bold text-sm transition-all whitespace-nowrap"
+                    >
+                        + Random
+                    </button>
+                </div>
+
+                {/* Gallery Grid */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4 min-h-[150px] p-4 bg-theme-surface/30 rounded-2xl border-2 border-dashed border-theme-border">
+                    {images.length === 0 ? (
+                        <div className="col-span-full flex flex-col items-center justify-center text-theme-muted py-8">
+                            <ImageIcon className="w-12 h-12 mb-3 opacity-30" />
+                            <span className="text-sm font-medium">No images added yet</span>
+                            <span className="text-xs opacity-50">Add URLs or generate random images</span>
+                        </div>
+                    ) : (
+                        images.map((img, index) => (
+                            <div key={index} className="group relative aspect-video bg-theme-bg rounded-xl border border-theme-border overflow-hidden shadow-sm hover:border-neon-blue transition-all">
+                                <img src={img} alt={`Upload ${index}`} className="w-full h-full object-cover" />
+                                
+                                {/* Overlay Actions */}
+                                <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                                    <button 
+                                        type="button"
+                                        onClick={() => handleRemoveImage(index)}
+                                        className="p-2 bg-red-500/20 text-red-500 hover:bg-red-500 hover:text-white rounded-full transition-colors"
+                                    >
+                                        <X className="w-4 h-4" />
+                                    </button>
+                                    {index !== 0 && (
+                                        <button 
+                                            type="button"
+                                            onClick={() => setAsCover(index)}
+                                            className="p-2 bg-white/20 text-white hover:bg-neon-blue hover:text-black rounded-full transition-colors"
+                                            title="Set as Cover"
+                                        >
+                                            <Star className="w-4 h-4" />
+                                        </button>
+                                    )}
+                                </div>
+
+                                {/* Cover Badge */}
+                                {index === 0 && (
+                                    <div className="absolute top-2 left-2 px-2 py-0.5 bg-neon-blue text-black text-[10px] font-bold rounded shadow-lg">
+                                        COVER
+                                    </div>
+                                )}
+                            </div>
+                        ))
+                    )}
                 </div>
             </div>
 
@@ -252,8 +323,8 @@ const CreateListing: React.FC<CreateListingProps> = ({ onCancel, onSubmit, user 
                 </button>
                 <button
                     type="submit"
-                    disabled={isLoading}
-                    className="px-8 py-3 rounded-xl bg-neon-blue text-black font-bold shadow-[0_0_20px_rgba(0,243,255,0.4)] hover:shadow-[0_0_30px_rgba(0,243,255,0.6)] hover:scale-105 transition-all flex items-center gap-2 disabled:opacity-50 disabled:hover:scale-100"
+                    disabled={isLoading || images.length === 0}
+                    className="px-8 py-3 rounded-xl bg-neon-blue text-black font-bold shadow-[0_0_20px_rgba(0,243,255,0.4)] hover:shadow-[0_0_30px_rgba(0,243,255,0.6)] hover:scale-105 transition-all flex items-center gap-2 disabled:opacity-50 disabled:hover:scale-100 disabled:cursor-not-allowed"
                 >
                     {isLoading ? (
                         <>Processing...</>

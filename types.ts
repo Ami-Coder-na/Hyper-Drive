@@ -26,6 +26,7 @@ export interface Vehicle {
   year: number;
   price: number;
   image: string;
+  gallery?: string[];
   type: 'CAR' | 'BIKE' | 'TRUCK' | 'EV' | 'PART';
   location: string;
   description: string;
