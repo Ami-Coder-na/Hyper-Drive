@@ -164,7 +164,8 @@ const Marketplace: React.FC<MarketplaceProps> = ({ vehicles, onSelectVehicle, wi
                     src={featuredVehicle.image} 
                     className="w-full h-80 object-cover opacity-80 group-hover:scale-105 transition-transform duration-1000" 
                     alt="Featured" 
-                    loading="lazy" 
+                    // Eager load LCP image
+                    fetchPriority="high"
                     decoding="async"
                     onError={handleImageError}
                 />
