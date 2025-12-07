@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { User, Vehicle, SocialPost } from '../types';
 import { POSTS } from '../constants';
@@ -21,7 +22,7 @@ const Profile: React.FC<ProfileProps> = ({ user, currentUser, vehicles, wishlist
     bio: 'Night City Drifter | EV Enthusiast | Tech Hunter',
     location: 'Neo Tokyo, District 9',
     website: 'hyperdrive.io/u/drift',
-    coverImage: 'https://picsum.photos/seed/cybercity/1200/400'
+    coverImage: 'https://images.unsplash.com/photo-1511919884226-fd3cad34687c?auto=format&fit=crop&q=80&w=2000'
   });
 
   const isOwnProfile = user.id === currentUser.id;
@@ -30,6 +31,17 @@ const Profile: React.FC<ProfileProps> = ({ user, currentUser, vehicles, wishlist
   const wishlistedVehicles = vehicles.filter(v => wishlist.has(v.id));
   const myListings = vehicles.filter(v => v.seller.id === user.id);
   const myPosts = POSTS.filter(p => p.author.id === user.id);
+
+  // Review Avatars (Fixed Valid URLs)
+  const REVIEW_AVATARS = [
+    'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=100',
+    'https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&q=80&w=100',
+    'https://images.unsplash.com/photo-1633332755192-727a05c4013d?auto=format&fit=crop&q=80&w=100'
+  ];
+
+  const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
+    e.currentTarget.src = 'https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?auto=format&fit=crop&q=80&w=2000';
+  };
 
   const StatCard = ({ label, value, icon: Icon, color }: any) => (
     <div className="bg-theme-card border border-theme-border rounded-2xl p-4 flex items-center gap-4 flex-1 shadow-sm hover:border-neon-blue transition-colors group">
@@ -47,7 +59,12 @@ const Profile: React.FC<ProfileProps> = ({ user, currentUser, vehicles, wishlist
     <div className="pb-24 animate-in fade-in slide-in-from-bottom-4">
       {/* Cover Image */}
       <div className="relative h-64 md:h-80 w-full overflow-hidden group">
-        <img src={profileData.coverImage} className="w-full h-full object-cover" alt="Cover" />
+        <img 
+            src={profileData.coverImage} 
+            className="w-full h-full object-cover" 
+            alt="Cover" 
+            onError={handleImageError}
+        />
         <div className="absolute inset-0 bg-gradient-to-t from-theme-bg via-theme-bg/20 to-transparent" />
         
         {isOwnProfile && (
@@ -172,7 +189,12 @@ const Profile: React.FC<ProfileProps> = ({ user, currentUser, vehicles, wishlist
                                 className="group bg-theme-card border border-theme-border rounded-2xl overflow-hidden cursor-pointer hover:border-neon-purple transition-all hover:shadow-[0_0_20px_rgba(188,19,254,0.15)]"
                               >
                                 <div className="aspect-[4/3] relative overflow-hidden">
-                                  <img src={vehicle.image} alt={vehicle.model} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
+                                  <img 
+                                    src={vehicle.image} 
+                                    alt={vehicle.model} 
+                                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" 
+                                    onError={handleImageError}
+                                  />
                                   <div className="absolute top-2 right-2">
                                       <button 
                                         onClick={(e) => { e.stopPropagation(); onToggleWishlist(vehicle.id); }}
@@ -211,7 +233,12 @@ const Profile: React.FC<ProfileProps> = ({ user, currentUser, vehicles, wishlist
                                 className="group bg-theme-card border border-theme-border rounded-2xl overflow-hidden cursor-pointer hover:border-neon-blue transition-all"
                               >
                                 <div className="aspect-[4/3] relative overflow-hidden">
-                                  <img src={vehicle.image} alt={vehicle.model} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
+                                  <img 
+                                    src={vehicle.image} 
+                                    alt={vehicle.model} 
+                                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" 
+                                    onError={handleImageError}
+                                  />
                                   <div className="absolute top-2 left-2 bg-neon-blue text-black text-[10px] font-bold px-2 py-1 rounded">
                                       LISTED
                                   </div>
@@ -260,7 +287,7 @@ const Profile: React.FC<ProfileProps> = ({ user, currentUser, vehicles, wishlist
                     {myPosts.length > 0 ? myPosts.map(post => (
                         <div key={post.id} className="bg-theme-card border border-theme-border rounded-2xl overflow-hidden flex flex-col md:flex-row">
                              <div className="md:w-1/3 h-48 md:h-auto relative">
-                                <img src={post.image} className="w-full h-full object-cover" alt="Post" />
+                                <img src={post.image} className="w-full h-full object-cover" alt="Post" onError={handleImageError} />
                                 <div className="absolute top-2 right-2 bg-black/50 backdrop-blur rounded p-1 text-white">
                                     <Heart className="w-3 h-3 fill-current" />
                                 </div>
@@ -295,15 +322,19 @@ const Profile: React.FC<ProfileProps> = ({ user, currentUser, vehicles, wishlist
                         </div>
                         
                         <div className="space-y-6">
-                            {[1, 2, 3].map((r) => (
-                                <div key={r} className="border-b border-theme-border/50 pb-4 last:border-0">
+                            {[0, 1, 2].map((i) => (
+                                <div key={i} className="border-b border-theme-border/50 pb-4 last:border-0">
                                     <div className="flex justify-between items-start mb-2">
                                         <div className="flex items-center gap-2">
                                             <div className="w-8 h-8 rounded-full bg-theme-surface overflow-hidden">
-                                                <img src={`https://picsum.photos/seed/${r+100}/100/100`} alt="User" />
+                                                <img 
+                                                    src={REVIEW_AVATARS[i]} 
+                                                    alt="User" 
+                                                    className="w-full h-full object-cover"
+                                                />
                                             </div>
                                             <div>
-                                                <p className="text-sm font-bold text-theme-text">Cyber_Buyer_99</p>
+                                                <p className="text-sm font-bold text-theme-text">Cyber_Buyer_9{9-i}</p>
                                                 <div className="flex gap-0.5">
                                                     {[1,2,3,4,5].map(s => <Star key={s} className="w-3 h-3 text-yellow-500 fill-yellow-500" />)}
                                                 </div>

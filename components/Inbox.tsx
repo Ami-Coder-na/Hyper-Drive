@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Search, Phone, Video, MoreVertical, Send, Paperclip, Smile, Image as ImageIcon, Mic, Check, CheckCheck, ChevronLeft } from 'lucide-react';
 import { User } from '../types';
@@ -15,7 +16,7 @@ const Inbox: React.FC<InboxProps> = ({ currentUser, onBack }) => {
   const CONVERSATIONS = [
     { 
       id: 1, 
-      user: { name: "Sarah Connor", handle: "@skynet_hunter", avatar: "https://picsum.photos/seed/sarah/100/100", status: "online" },
+      user: { name: "Sarah Connor", handle: "@skynet_hunter", avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=100", status: "online" },
       lastMessage: "Is the flux capacitor still available?",
       time: "5m",
       unread: 2,
@@ -26,7 +27,7 @@ const Inbox: React.FC<InboxProps> = ({ currentUser, onBack }) => {
     },
     { 
       id: 2, 
-      user: { name: "SpeedDemon", handle: "@speedy", avatar: "https://picsum.photos/seed/speedy/100/100", status: "offline" },
+      user: { name: "SpeedDemon", handle: "@speedy", avatar: "https://images.unsplash.com/photo-1527980965255-d3b416303d12?auto=format&fit=crop&q=80&w=100", status: "offline" },
       lastMessage: "Let's race tonight at the neon district.",
       time: "1h",
       unread: 0,
@@ -37,7 +38,7 @@ const Inbox: React.FC<InboxProps> = ({ currentUser, onBack }) => {
     },
     { 
       id: 3, 
-      user: { name: "EuroImports", handle: "@euro_parts", avatar: "https://picsum.photos/seed/porsche/100/100", status: "away" },
+      user: { name: "EuroImports", handle: "@euro_parts", avatar: "https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&q=80&w=100", status: "away" },
       lastMessage: "Your order #4492 has shipped.",
       time: "1d",
       unread: 0,

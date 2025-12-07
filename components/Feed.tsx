@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { Heart, MessageCircle, Send, MoreVertical, Bookmark, Play, Plus, X, ChevronLeft, ChevronRight, Camera, Image as ImageIcon, Zap, Share2, AlertOctagon, Copy, Ban, UserPlus } from 'lucide-react';
@@ -36,11 +37,11 @@ const Feed: React.FC = () => {
 
   // Story State
   const [stories, setStories] = useState<Story[]>([
-    { id: 's1', user: 'User_1', avatar: 'https://picsum.photos/seed/u1/100/100', image: 'https://picsum.photos/seed/story1/800/1200', isLive: true, time: '2h ago' },
-    { id: 's2', user: 'User_2', avatar: 'https://picsum.photos/seed/u2/100/100', image: 'https://picsum.photos/seed/story2/800/1200', isLive: false, time: '4h ago' },
-    { id: 's3', user: 'User_3', avatar: 'https://picsum.photos/seed/u3/100/100', image: 'https://picsum.photos/seed/story3/800/1200', isLive: false, time: '5h ago' },
-    { id: 's4', user: 'User_4', avatar: 'https://picsum.photos/seed/u4/100/100', image: 'https://picsum.photos/seed/story4/800/1200', isLive: false, time: '6h ago' },
-    { id: 's5', user: 'User_5', avatar: 'https://picsum.photos/seed/u5/100/100', image: 'https://picsum.photos/seed/story5/800/1200', isLive: false, time: '10h ago' },
+    { id: 's1', user: 'User_1', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=100', image: 'https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?auto=format&fit=crop&q=80&w=600', isLive: true, time: '2h ago' },
+    { id: 's2', user: 'User_2', avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80&w=100', image: 'https://images.unsplash.com/photo-1517153192978-86d7734208a6?auto=format&fit=crop&q=80&w=600', isLive: false, time: '4h ago' },
+    { id: 's3', user: 'User_3', avatar: 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&q=80&w=100', image: 'https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?auto=format&fit=crop&q=80&w=600', isLive: false, time: '5h ago' },
+    { id: 's4', user: 'User_4', avatar: 'https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?auto=format&fit=crop&q=80&w=100', image: 'https://images.unsplash.com/photo-1469037784699-75dcff1cbf75?auto=format&fit=crop&q=80&w=600', isLive: false, time: '6h ago' },
+    { id: 's5', user: 'User_5', avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=100', image: 'https://images.unsplash.com/photo-1542282088-fe8426682b8f?auto=format&fit=crop&q=80&w=600', isLive: false, time: '10h ago' },
   ]);
 
   const [viewingStoryIndex, setViewingStoryIndex] = useState<number | null>(null);
@@ -165,7 +166,7 @@ const Feed: React.FC = () => {
   // Story Upload Logic
   const handleGenerateRandomImage = () => {
     const randomId = Math.floor(Math.random() * 1000);
-    setNewStoryImage(`https://picsum.photos/seed/${randomId}/800/1200`);
+    setNewStoryImage(`https://images.unsplash.com/photo-1503376763036-066120622c74?auto=format&fit=crop&q=80&w=600`);
   };
 
   const handlePostStory = () => {
@@ -189,9 +190,9 @@ const Feed: React.FC = () => {
 
   // Mock Sidebar Data
   const friends = [
-    { id: 1, name: 'Sarah Connor', handle: '@skynet_hunter', status: 'online', avatar: 'https://picsum.photos/seed/sarah/100/100' },
-    { id: 2, name: 'K. Knight', handle: '@kitt_driver', status: 'offline', avatar: 'https://picsum.photos/seed/kitt/100/100' },
-    { id: 3, name: 'Doc Brown', handle: '@time_traveler', status: 'away', avatar: 'https://picsum.photos/seed/doc/100/100' },
+    { id: 1, name: 'Sarah Connor', handle: '@skynet_hunter', status: 'online', avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=100' },
+    { id: 2, name: 'K. Knight', handle: '@kitt_driver', status: 'offline', avatar: 'https://images.unsplash.com/photo-1599566150163-29194dcaad36?auto=format&fit=crop&q=80&w=100' },
+    { id: 3, name: 'Doc Brown', handle: '@time_traveler', status: 'away', avatar: 'https://images.unsplash.com/photo-1531427186611-ecfd6d936c79?auto=format&fit=crop&q=80&w=100' },
   ];
 
   return (

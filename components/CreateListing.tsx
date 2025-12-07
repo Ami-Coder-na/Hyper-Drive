@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { ChevronLeft, Upload, MapPin, DollarSign, Calendar, Tag, Image as ImageIcon, Zap, AlertCircle, Plus, X, Star } from 'lucide-react';
 import { Vehicle, User } from '../types';
@@ -42,9 +43,17 @@ const CreateListing: React.FC<CreateListingProps> = ({ onCancel, onSubmit, user 
   };
 
   const handleRandomizeImage = () => {
-    const randomId = Math.floor(Math.random() * 1000);
-    const newImage = `https://picsum.photos/seed/${randomId}/800/600`;
-    setImages(prev => [...prev, newImage]);
+    // Curated high-quality vehicle images
+    const sampleImages = [
+        'https://images.unsplash.com/photo-1552519507-da3b142c6e3d?auto=format&fit=crop&q=80&w=1200',
+        'https://images.unsplash.com/photo-1617788138017-80ad40651399?auto=format&fit=crop&q=80&w=1200',
+        'https://images.unsplash.com/photo-1494976388531-d1058494cdd8?auto=format&fit=crop&q=80&w=1200',
+        'https://images.unsplash.com/photo-1542282088-fe8426682b8f?auto=format&fit=crop&q=80&w=1200',
+        'https://images.unsplash.com/photo-1502877338535-766e1452684a?auto=format&fit=crop&q=80&w=1200',
+        'https://images.unsplash.com/photo-1550009158-9ebf69173e03?auto=format&fit=crop&q=80&w=1200'
+    ];
+    const randomImg = sampleImages[Math.floor(Math.random() * sampleImages.length)];
+    setImages(prev => [...prev, randomImg]);
   };
 
   const setAsCover = (index: number) => {
@@ -68,7 +77,7 @@ const CreateListing: React.FC<CreateListingProps> = ({ onCancel, onSubmit, user 
         model: formData.model,
         year: Number(formData.year),
         price: Number(formData.price),
-        image: images.length > 0 ? images[0] : 'https://picsum.photos/800/600', // Use first image as cover
+        image: images.length > 0 ? images[0] : 'https://images.unsplash.com/photo-1552519507-da3b142c6e3d?auto=format&fit=crop&q=80&w=1200', // Use first image as cover
         gallery: images, // Store all images
         type: formData.type as any,
         location: formData.location,

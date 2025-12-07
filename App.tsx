@@ -1,5 +1,6 @@
+
 import React, { useState, useEffect, useRef } from 'react';
-import { Home, ShoppingBag, User as UserIcon, Hexagon, Bot, Heart, MapPin, Zap, Bell, Settings as SettingsIcon, LogOut, Gavel, Sun, Moon, Plus, Search, MessageCircle, MessageSquareText, Check, X, ChevronRight, Megaphone, ArrowRight, ExternalLink } from 'lucide-react';
+import { Home, ShoppingBag, User as UserIcon, Hexagon, Bot, Heart, MapPin, Zap, Bell, Settings as SettingsIcon, LogOut, Gavel, Sun, Moon, Plus, Search, MessageSquareText, Check, X, ChevronRight, Megaphone, ArrowRight, ExternalLink } from 'lucide-react';
 import Marketplace from './components/Marketplace';
 import Feed from './components/Feed';
 import VehicleDetail from './components/VehicleDetail';
@@ -45,6 +46,7 @@ const App: React.FC = () => {
   const [wishlist, setWishlist] = useState<Set<string>>(new Set());
   const [isDark, setIsDark] = useState(true);
   const [vehicles, setVehicles] = useState<Vehicle[]>(INITIAL_VEHICLES);
+  const [following, setFollowing] = useState<Set<string>>(new Set());
 
   // Header Interactions State
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -85,6 +87,15 @@ const App: React.FC = () => {
       return next;
     });
   };
+  
+  const toggleFollow = (userId: string) => {
+      setFollowing(prev => {
+          const next = new Set(prev);
+          if (next.has(userId)) next.delete(userId);
+          else next.add(userId);
+          return next;
+      });
+  };
 
   const handleCreateListing = (newVehicle: Vehicle) => {
     setVehicles(prev => [newVehicle, ...prev]);
@@ -107,14 +118,14 @@ const App: React.FC = () => {
   ];
 
   const DIRECT_MESSAGES = [
-    { id: 1, user: "Sarah Connor", text: "Is the flux capacitor still available?", time: "5m", unread: 2, avatar: "https://picsum.photos/seed/sarah/100/100" },
-    { id: 2, user: "SpeedDemon", text: "Let's race tonight.", time: "1h", unread: 0, avatar: "https://picsum.photos/seed/speedy/100/100" },
-    { id: 3, user: "EuroImports", text: "Order shipped.", time: "1d", unread: 0, avatar: "https://picsum.photos/seed/porsche/100/100" },
+    { id: 1, user: "Sarah Connor", text: "Is the flux capacitor still available?", time: "5m", unread: 2, avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=100" },
+    { id: 2, user: "SpeedDemon", text: "Let's race tonight.", time: "1h", unread: 0, avatar: "https://images.unsplash.com/photo-1527980965255-d3b416303d12?auto=format&fit=crop&q=80&w=100" },
+    { id: 3, user: "EuroImports", text: "Order shipped.", time: "1d", unread: 0, avatar: "https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&q=80&w=100" },
   ];
 
   const renderContent = () => {
     switch (view) {
-      case ViewState.FEED: return <Feed />;
+      case ViewState.FEED: return <Feed following={following} onToggleFollow={toggleFollow} />;
       case ViewState.MARKETPLACE:
         return <Marketplace vehicles={vehicles} onSelectVehicle={handleVehicleSelect} wishlist={wishlist} onToggleWishlist={toggleWishlist} />;
       case ViewState.VEHICLE_DETAIL:
@@ -146,7 +157,7 @@ const App: React.FC = () => {
             onCreateListing={() => setView(ViewState.CREATE_LISTING)}
           />
         );
-      default: return <Feed />;
+      default: return <Feed following={following} onToggleFollow={toggleFollow} />;
     }
   };
 
@@ -333,7 +344,7 @@ const App: React.FC = () => {
 
                   {/* Modern Dropdown */}
                   {showNotifications && (
-                      <div className="absolute top-full right-0 mt-4 w-80 glass rounded-2xl border border-theme-border shadow-2xl overflow-hidden animate-in fade-in slide-in-from-top-2 origin-top-right ring-1 ring-white/5">
+                      <div className="absolute top-full right-0 mt-4 w-80 bg-theme-card border border-theme-border rounded-2xl shadow-2xl overflow-hidden animate-in fade-in slide-in-from-top-2 origin-top-right ring-1 ring-white/5">
                           <div className="p-4 border-b border-theme-border bg-theme-surface/50 backdrop-blur-md flex justify-between items-center">
                              <h3 className="font-display font-bold text-sm text-theme-text tracking-wide">ACTIVITY</h3>
                              <button className="text-xs text-theme-muted hover:text-theme-text transition-colors">Mark all read</button>
@@ -394,15 +405,23 @@ const App: React.FC = () => {
           <Plus className="w-6 h-6" />
         </button>
 
-        {/* AI Assistant */}
-        <button
-          onClick={() => setShowChat(!showChat)}
-          className="fixed bottom-24 md:bottom-8 right-4 md:right-8 bg-gradient-to-r from-neon-purple to-fuchsia-600 text-white p-4 rounded-2xl shadow-[0_0_30px_rgba(188,19,254,0.4)] z-50 transition-all hover:scale-105 hover:rotate-3 active:scale-95 group flex items-center gap-2"
-        >
-          {showChat ? <MessageCircle className="w-6 h-6" /> : <Bot className="w-6 h-6 group-hover:animate-bounce" />}
-          <span className="hidden md:inline font-bold pr-1">AI Chat</span>
-        </button>
-        {showChat && <AIChatBot onClose={() => setShowChat(false)} />}
+        {/* AI Assistant - Only visible on FEED */}
+        {view === ViewState.FEED && (
+          <>
+            <button
+              onClick={() => setShowChat(!showChat)}
+              className={`fixed bottom-24 md:bottom-8 right-4 md:right-8 p-4 rounded-2xl shadow-[0_0_30px_rgba(188,19,254,0.4)] z-50 transition-all hover:scale-105 active:scale-95 group flex items-center gap-2 ${
+                showChat 
+                  ? 'bg-theme-card border border-theme-border text-theme-text' 
+                  : 'bg-gradient-to-r from-neon-purple to-fuchsia-600 text-white hover:rotate-3'
+              }`}
+            >
+              {showChat ? <X className="w-6 h-6" /> : <Bot className="w-6 h-6 group-hover:animate-bounce" />}
+              <span className="hidden md:inline font-bold pr-1">{showChat ? 'Close' : 'AI Chat'}</span>
+            </button>
+            {showChat && <AIChatBot onClose={() => setShowChat(false)} />}
+          </>
+        )}
 
         {/* Mobile Nav Bar */}
         <div className="md:hidden fixed bottom-0 w-full glass border-t-0 z-50 pb-safe">

@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Vehicle } from '../types';
 import { ChevronLeft, ShieldCheck, Zap, MessageCircle, Heart, Image as ImageIcon, Box, Activity, Cpu, Share2, Terminal, Clock, MapPin, Gauge } from 'lucide-react';
@@ -33,6 +34,10 @@ const VehicleDetail: React.FC<VehicleDetailProps> = ({ vehicle, onBack, isWishli
     );
     setAiAnalysis(text);
     setLoadingAi(false);
+  };
+
+  const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
+    e.currentTarget.src = 'https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&q=80&w=1200';
   };
 
   // Helper for Segmented Bar
@@ -95,6 +100,7 @@ const VehicleDetail: React.FC<VehicleDetailProps> = ({ vehicle, onBack, isWishli
                         src={gallery[activeImageIndex]} 
                         alt={vehicle.model}
                         className="w-full h-full object-cover"
+                        onError={handleImageError}
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-60" />
                 </div>
@@ -139,7 +145,7 @@ const VehicleDetail: React.FC<VehicleDetailProps> = ({ vehicle, onBack, isWishli
                 onClick={() => { setViewMode('IMAGE'); setActiveImageIndex(i); }}
                 className={`group relative aspect-[4/3] rounded-2xl bg-theme-card border overflow-hidden cursor-pointer transition-all ${activeImageIndex === i && viewMode === 'IMAGE' ? 'border-neon-blue ring-1 ring-neon-blue' : 'border-theme-border hover:border-neon-blue'}`}
               >
-                <img src={img} className="w-full h-full object-cover opacity-60 group-hover:opacity-100 transition-all grayscale group-hover:grayscale-0" alt="thumb" />
+                <img src={img} className="w-full h-full object-cover opacity-60 group-hover:opacity-100 transition-all grayscale group-hover:grayscale-0" alt="thumb" onError={handleImageError} />
                 <div className="absolute inset-0 bg-neon-blue/10 opacity-0 group-hover:opacity-100 transition-opacity" />
               </div>
             ))}
