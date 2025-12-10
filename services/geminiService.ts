@@ -7,18 +7,20 @@ const getClient = (): GoogleGenAI | null => {
 
   try {
     let apiKey = '';
-    // Aggressive safety check for process.env
+    // Aggressive safety check for process.env to prevent "process is not defined" crashes in browser
     try {
-      if (typeof process !== 'undefined' && process && process.env && process.env.API_KEY) {
-        apiKey = process.env.API_KEY;
+      if (typeof process !== 'undefined' && process && process.env) {
+         if (process.env.API_KEY) {
+           apiKey = process.env.API_KEY;
+         }
       }
     } catch (e) {
-      // Ignore ReferenceError or other access errors in browser
-      console.warn("Could not access process.env");
+      // Ignore ReferenceError or other access errors in strict browser environments
     }
 
     if (!apiKey) {
-      console.warn("HyperDrive: API Key not found. Running in offline simulation mode.");
+      // Logic to support safe fallbacks without crashing
+      // console.warn("HyperDrive: API Key not found. Running in offline simulation mode.");
       return null;
     }
 
@@ -54,7 +56,8 @@ export const generateVehicleInsight = async (vehicleName: string, query: string)
     return response.text || "Systems are offline. Unable to retrieve vehicle data.";
   } catch (error) {
     console.error("Gemini API Error:", error);
-    return "Error communicating with the HyperDrive AI Core.";
+    // Return a fallback string instead of throwing, so the UI doesn't break
+    return "Error communicating with the HyperDrive AI Core. Diagnostic systems unavailable.";
   }
 };
 
@@ -62,6 +65,7 @@ export const analyzeMarketTrends = async (): Promise<string> => {
    try {
     const ai = getClient();
     if (!ai) {
+      // Fallback trend text
       return "MARKET SIMULATION: EV prices stabilizing | Classic Restomods trending up +15% | Credits flush in Neo-Tokyo sector.";
     }
 
@@ -80,6 +84,6 @@ export const analyzeMarketTrends = async (): Promise<string> => {
     return response.text || "Market data stream interrupted.";
   } catch (error) {
     console.error("Gemini API Error:", error);
-    return "Market data unavailable.";
+    return "Market data unavailable. Connection lost.";
   }
 }
