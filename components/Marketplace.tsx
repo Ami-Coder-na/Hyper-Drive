@@ -655,7 +655,7 @@ const Marketplace: React.FC<MarketplaceProps> = ({ vehicles, onSelectVehicle, wi
                                     </div>
                                  </div>
                                  <div className="text-right shrink-0">
-                                    <div className="text-xl font-display font-bold text-theme-text">${vehicle.price.toLocaleString()}</p>
+                                    <div className="text-xl font-display font-bold text-theme-text">${vehicle.price.toLocaleString()}</div>
                                  </div>
                             </div>
                             
