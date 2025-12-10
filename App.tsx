@@ -9,6 +9,7 @@ import CreateListing from './components/CreateListing';
 import Inbox from './components/Inbox';
 import NotificationsPage from './components/NotificationsPage';
 import Profile from './components/Profile';
+import Auth from './components/Auth';
 import { ViewState, Vehicle, User } from './types';
 import { MOCK_USER, VEHICLES as INITIAL_VEHICLES, MOCK_CONVERSATIONS } from './constants';
 import { analyzeMarketTrends } from './services/geminiService';
@@ -38,6 +39,7 @@ const SidebarItem = ({ icon, label, active, onClick, badge }: any) => (
 );
 
 const App: React.FC = () => {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [view, setView] = useState<ViewState>(ViewState.FEED);
   const [selectedVehicle, setSelectedVehicle] = useState<Vehicle | null>(null);
   const [showChat, setShowChat] = useState(false);
@@ -49,16 +51,13 @@ const App: React.FC = () => {
 
   // Theme State with Persistence
   const [isDark, setIsDark] = useState(() => {
-    // Check localStorage first
     if (typeof window !== 'undefined') {
         const saved = localStorage.getItem('theme');
-        // Default to dark if no setting or if setting is 'dark'
         return saved ? saved === 'dark' : true;
     }
     return true;
   });
 
-  // Apply Theme Effect
   useEffect(() => {
     localStorage.setItem('theme', isDark ? 'dark' : 'light');
     if (isDark) {
@@ -74,13 +73,14 @@ const App: React.FC = () => {
   const [showNotifications, setShowNotifications] = useState(false);
   const [showMessagesMenu, setShowMessagesMenu] = useState(false);
 
-  // Refs for click outside
   const notificationRef = useRef<HTMLDivElement>(null);
   const messageRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    analyzeMarketTrends().then(setMarketTicker);
-
+    if (isAuthenticated) {
+      analyzeMarketTrends().then(setMarketTicker);
+    }
+    
     const handleClickOutside = (event: MouseEvent) => {
       if (notificationRef.current && !notificationRef.current.contains(event.target as Node)) {
         setShowNotifications(false);
@@ -92,16 +92,30 @@ const App: React.FC = () => {
 
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
+  }, [isAuthenticated]);
   
   // Remove Loader on Mount
   useEffect(() => {
       const loader = document.getElementById('app-loader');
       if (loader) {
           loader.style.opacity = '0';
-          setTimeout(() => loader.remove(), 500);
+          setTimeout(() => {
+            if (loader) loader.remove();
+          }, 500);
       }
   }, []);
+
+  const handleLogin = () => {
+    setIsAuthenticated(true);
+    setView(ViewState.FEED);
+  };
+
+  const handleLogout = () => {
+    if (confirm("Terminating session. Confirm disconnect?")) {
+        setIsAuthenticated(false);
+        setView(ViewState.FEED);
+    }
+  };
 
   const handleVehicleSelect = (vehicle: Vehicle) => {
     setSelectedVehicle(vehicle);
@@ -133,20 +147,13 @@ const App: React.FC = () => {
 
   const toggleTheme = () => setIsDark(!isDark);
 
-  const handleLogout = () => {
-    if (confirm("Terminating session. Confirm disconnect?")) {
-        setView(ViewState.FEED);
-    }
-  };
-
-  // Nav to specific message
   const handleMessageClick = (id: number) => {
       setTargetChatId(id);
       setView(ViewState.MESSAGES);
       setShowMessagesMenu(false);
   };
 
-  // Mock Data for Dropdowns
+  // Mock Data for Notifications
   const NOTIFICATIONS = [
     { id: 1, text: "Tesla Cybertruck price dropped by 5%", time: "10m", type: "alert", read: false },
     { id: 2, text: "@driftking_alex liked your post", time: "1h", type: "social", read: true },
@@ -190,6 +197,10 @@ const App: React.FC = () => {
       default: return <Feed following={following} onToggleFollow={toggleFollow} />;
     }
   };
+
+  if (!isAuthenticated) {
+    return <Auth onLogin={handleLogin} />;
+  }
 
   return (
     <div className={`${isDark ? 'dark' : ''} h-full overflow-hidden`}>
