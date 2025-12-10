@@ -2,6 +2,8 @@ import React, { Component, ReactNode, ErrorInfo } from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
 
+console.log("HyperDrive System Booting...");
+
 interface ErrorBoundaryProps {
   children?: ReactNode;
 }
@@ -12,10 +14,7 @@ interface ErrorBoundaryState {
 }
 
 class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
-  constructor(props: ErrorBoundaryProps) {
-    super(props);
-    this.state = { hasError: false, error: null };
-  }
+  public state: ErrorBoundaryState = { hasError: false, error: null };
 
   static getDerivedStateFromError(error: Error): ErrorBoundaryState {
     return { hasError: true, error };
@@ -77,7 +76,12 @@ const loader = document.getElementById('app-loader');
 if (loader) {
   // Small timeout to ensure transition is smooth
   setTimeout(() => {
-      loader.style.opacity = '0';
-      setTimeout(() => loader.remove(), 500);
+      // Check again if it exists (might be removed by error boundary or user)
+      if (document.body.contains(loader)) {
+          loader.style.opacity = '0';
+          setTimeout(() => {
+              if (document.body.contains(loader)) loader.remove();
+          }, 500);
+      }
   }, 500);
 }
