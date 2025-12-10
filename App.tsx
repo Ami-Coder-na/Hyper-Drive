@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { Home, ShoppingBag, User as UserIcon, Hexagon, Bot, Heart, MapPin, Zap, Bell, Settings as SettingsIcon, LogOut, Gavel, Sun, Moon, Plus, Search, MessageSquareText, Check, X, ChevronRight, Megaphone, ArrowRight, ExternalLink } from 'lucide-react';
 import Marketplace from './components/Marketplace';
@@ -11,7 +10,7 @@ import Inbox from './components/Inbox';
 import NotificationsPage from './components/NotificationsPage';
 import Profile from './components/Profile';
 import { ViewState, Vehicle, User } from './types';
-import { MOCK_USER, VEHICLES as INITIAL_VEHICLES } from './constants';
+import { MOCK_USER, VEHICLES as INITIAL_VEHICLES, MOCK_CONVERSATIONS } from './constants';
 import { analyzeMarketTrends } from './services/geminiService';
 
 const SidebarItem = ({ icon, label, active, onClick, badge }: any) => (
@@ -44,9 +43,30 @@ const App: React.FC = () => {
   const [showChat, setShowChat] = useState(false);
   const [marketTicker, setMarketTicker] = useState<string>("Initializing secure connection...");
   const [wishlist, setWishlist] = useState<Set<string>>(new Set());
-  const [isDark, setIsDark] = useState(true);
   const [vehicles, setVehicles] = useState<Vehicle[]>(INITIAL_VEHICLES);
   const [following, setFollowing] = useState<Set<string>>(new Set());
+  const [targetChatId, setTargetChatId] = useState<number | null>(null);
+
+  // Theme State with Persistence
+  const [isDark, setIsDark] = useState(() => {
+    // Check localStorage first
+    if (typeof window !== 'undefined') {
+        const saved = localStorage.getItem('theme');
+        // Default to dark if no setting or if setting is 'dark'
+        return saved ? saved === 'dark' : true;
+    }
+    return true;
+  });
+
+  // Apply Theme Effect
+  useEffect(() => {
+    localStorage.setItem('theme', isDark ? 'dark' : 'light');
+    if (isDark) {
+        document.documentElement.classList.add('dark');
+    } else {
+        document.documentElement.classList.remove('dark');
+    }
+  }, [isDark]);
 
   // Header Interactions State
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -72,6 +92,15 @@ const App: React.FC = () => {
 
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+  
+  // Remove Loader on Mount
+  useEffect(() => {
+      const loader = document.getElementById('app-loader');
+      if (loader) {
+          loader.style.opacity = '0';
+          setTimeout(() => loader.remove(), 500);
+      }
   }, []);
 
   const handleVehicleSelect = (vehicle: Vehicle) => {
@@ -110,17 +139,18 @@ const App: React.FC = () => {
     }
   };
 
+  // Nav to specific message
+  const handleMessageClick = (id: number) => {
+      setTargetChatId(id);
+      setView(ViewState.MESSAGES);
+      setShowMessagesMenu(false);
+  };
+
   // Mock Data for Dropdowns
   const NOTIFICATIONS = [
     { id: 1, text: "Tesla Cybertruck price dropped by 5%", time: "10m", type: "alert", read: false },
     { id: 2, text: "@driftking_alex liked your post", time: "1h", type: "social", read: true },
     { id: 3, text: "Auction for R1M ending in 30 mins", time: "2h", type: "urgent", read: false },
-  ];
-
-  const DIRECT_MESSAGES = [
-    { id: 1, user: "Sarah Connor", text: "Is the flux capacitor still available?", time: "5m", unread: 2, avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=100" },
-    { id: 2, user: "SpeedDemon", text: "Let's race tonight.", time: "1h", unread: 0, avatar: "https://images.unsplash.com/photo-1527980965255-d3b416303d12?auto=format&fit=crop&q=80&w=100" },
-    { id: 3, user: "EuroImports", text: "Order shipped.", time: "1d", unread: 0, avatar: "https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&q=80&w=100" },
   ];
 
   const renderContent = () => {
@@ -142,7 +172,7 @@ const App: React.FC = () => {
       case ViewState.CREATE_LISTING:
         return <CreateListing onCancel={() => setView(ViewState.MARKETPLACE)} onSubmit={handleCreateListing} user={MOCK_USER} />;
       case ViewState.MESSAGES:
-        return <Inbox currentUser={MOCK_USER} onBack={() => setView(ViewState.FEED)} />;
+        return <Inbox currentUser={MOCK_USER} onBack={() => setView(ViewState.FEED)} initialChatId={targetChatId} />;
       case ViewState.NOTIFICATIONS:
         return <NotificationsPage onBack={() => setView(ViewState.FEED)} />;
       case ViewState.PROFILE:
@@ -295,7 +325,7 @@ const App: React.FC = () => {
 
                    {/* Modern Dropdown */}
                    {showMessagesMenu && (
-                      <div className="absolute top-full right-0 mt-4 w-96 bg-theme-card border border-theme-border rounded-2xl shadow-2xl overflow-hidden animate-in fade-in slide-in-from-top-2 origin-top-right ring-1 ring-white/5">
+                      <div className="absolute top-full right-0 mt-4 w-96 bg-theme-card border border-theme-border rounded-2xl shadow-2xl overflow-hidden animate-in fade-in slide-in-from-top-2 origin-top-right ring-1 ring-white/5 bg-theme-card">
                           <div className="p-4 border-b border-theme-border bg-theme-surface/50 backdrop-blur-md flex justify-between items-center">
                              <h3 className="font-display font-bold text-sm text-theme-text tracking-wide">MESSAGES</h3>
                              <button className="text-xs font-bold text-neon-blue hover:text-white bg-neon-blue/10 hover:bg-neon-blue px-2 py-1 rounded transition-colors">
@@ -303,20 +333,24 @@ const App: React.FC = () => {
                              </button>
                           </div>
                           <div className="max-h-[300px] overflow-y-auto">
-                              {DIRECT_MESSAGES.map((msg) => (
-                                  <div key={msg.id} className="p-4 hover:bg-white/5 cursor-pointer flex gap-4 transition-colors border-b border-theme-border/30 last:border-0 group relative">
+                              {MOCK_CONVERSATIONS.map((msg) => (
+                                  <div 
+                                    key={msg.id} 
+                                    onClick={() => handleMessageClick(msg.id)}
+                                    className="p-4 hover:bg-white/5 cursor-pointer flex gap-4 transition-colors border-b border-theme-border/30 last:border-0 group relative"
+                                   >
                                       {msg.unread > 0 && <div className="absolute left-0 top-0 bottom-0 w-1 bg-neon-blue" />}
                                       <div className="relative shrink-0">
-                                         <img src={msg.avatar} className="w-12 h-12 rounded-full object-cover border border-theme-border group-hover:border-neon-blue transition-colors" alt="avatar" />
-                                         <div className="absolute bottom-0 right-0 w-3 h-3 bg-neon-green rounded-full border-2 border-theme-card" />
+                                         <img src={msg.user.avatar} className="w-12 h-12 rounded-full object-cover border border-theme-border group-hover:border-neon-blue transition-colors" alt="avatar" />
+                                         <div className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-theme-card ${msg.user.status === 'online' ? 'bg-neon-green' : 'bg-theme-muted'}`} />
                                       </div>
                                       <div className="flex-1 min-w-0">
                                           <div className="flex justify-between items-baseline mb-0.5">
-                                              <span className={`text-sm truncate ${msg.unread > 0 ? 'font-bold text-white' : 'font-medium text-theme-text'}`}>{msg.user}</span>
+                                              <span className={`text-sm truncate ${msg.unread > 0 ? 'font-bold text-white' : 'font-medium text-theme-text'}`}>{msg.user.name}</span>
                                               <span className="text-[10px] text-theme-muted">{msg.time} ago</span>
                                           </div>
                                           <p className={`text-xs truncate ${msg.unread > 0 ? 'text-theme-text font-medium' : 'text-theme-muted'}`}>
-                                              {msg.text}
+                                              {msg.lastMessage}
                                           </p>
                                       </div>
                                   </div>
@@ -344,7 +378,7 @@ const App: React.FC = () => {
 
                   {/* Modern Dropdown */}
                   {showNotifications && (
-                      <div className="absolute top-full right-0 mt-4 w-80 bg-theme-card border border-theme-border rounded-2xl shadow-2xl overflow-hidden animate-in fade-in slide-in-from-top-2 origin-top-right ring-1 ring-white/5">
+                      <div className="absolute top-full right-0 mt-4 w-80 bg-theme-card border border-theme-border rounded-2xl shadow-2xl overflow-hidden animate-in fade-in slide-in-from-top-2 origin-top-right ring-1 ring-white/5 bg-theme-card">
                           <div className="p-4 border-b border-theme-border bg-theme-surface/50 backdrop-blur-md flex justify-between items-center">
                              <h3 className="font-display font-bold text-sm text-theme-text tracking-wide">ACTIVITY</h3>
                              <button className="text-xs text-theme-muted hover:text-theme-text transition-colors">Mark all read</button>

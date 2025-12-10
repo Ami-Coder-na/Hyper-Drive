@@ -1,5 +1,4 @@
-
-import { Vehicle, SocialPost, User } from './types';
+import { Vehicle, SocialPost, User, Conversation } from './types';
 
 export const MOCK_USER: User = {
   id: 'u1',
@@ -8,7 +7,44 @@ export const MOCK_USER: User = {
   avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=200',
   isVerified: true,
   role: 'USER',
+  status: 'online'
 };
+
+export const MOCK_CONVERSATIONS: Conversation[] = [
+  { 
+    id: 1, 
+    user: { id: 'u2', name: "Sarah Connor", handle: "@skynet_hunter", avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=100", status: "online", isVerified: false, role: 'USER' },
+    lastMessage: "Is the flux capacitor still available?",
+    time: "5m",
+    unread: 2,
+    history: [
+      { id: 'm1', text: "Hey! Saw your listing.", sender: 'them', time: "10:30 AM" },
+      { id: 'm2', text: "Is the flux capacitor still available?", sender: 'them', time: "10:32 AM" },
+    ]
+  },
+  { 
+    id: 2, 
+    user: { id: 'u3', name: "SpeedDemon", handle: "@speedy", avatar: "https://images.unsplash.com/photo-1527980965255-d3b416303d12?auto=format&fit=crop&q=80&w=100", status: "offline", isVerified: false, role: 'USER' },
+    lastMessage: "Let's race tonight at the neon district.",
+    time: "1h",
+    unread: 0,
+    history: [
+      { id: 'm1', text: "Ready for the run?", sender: 'me', time: "Yesterday" },
+      { id: 'm2', text: "Let's race tonight at the neon district.", sender: 'them', time: "1:00 PM" },
+    ]
+  },
+  { 
+    id: 3, 
+    user: { id: 'u4', name: "EuroImports", handle: "@euro_parts", avatar: "https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&q=80&w=100", status: "away", isVerified: true, role: 'DEALER' },
+    lastMessage: "Your order #4492 has shipped.",
+    time: "1d",
+    unread: 0,
+    history: [
+      { id: 'm1', text: "Order confirmed.", sender: 'them', time: "Monday" },
+      { id: 'm2', text: "Your order #4492 has shipped.", sender: 'them', time: "Yesterday" },
+    ]
+  },
+];
 
 export const VEHICLES: Vehicle[] = [
   {
@@ -128,7 +164,7 @@ export const POSTS: SocialPost[] = [
   },
   {
     id: 'p2',
-    author: { ...MOCK_USER, name: 'Sarah Connor', handle: '@skynet_hunter', avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=200' },
+    author: { ...MOCK_USER, name: 'Sarah Connor', handle: '@skynet_hunter', avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=200', isVerified: false, role: 'USER', status: 'online' },
     content: 'Night ride through the neon district. This city never sleeps, and neither does my EV.',
     image: 'https://images.unsplash.com/photo-1555685812-4b943f1cb0eb?auto=format&fit=crop&q=80&w=1200',
     likes: 892,

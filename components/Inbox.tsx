@@ -1,59 +1,31 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Search, Phone, Video, MoreVertical, Send, Paperclip, Smile, Image as ImageIcon, Mic, Check, CheckCheck, ChevronLeft } from 'lucide-react';
 import { User } from '../types';
+import { MOCK_CONVERSATIONS } from '../constants';
 
 interface InboxProps {
   currentUser: User;
   onBack?: () => void;
+  initialChatId?: number | null;
 }
 
-const Inbox: React.FC<InboxProps> = ({ currentUser, onBack }) => {
-  const [activeChat, setActiveChat] = useState<number>(1);
+const Inbox: React.FC<InboxProps> = ({ currentUser, onBack, initialChatId }) => {
+  const [activeChat, setActiveChat] = useState<number>(initialChatId || 1);
   const [inputText, setInputText] = useState('');
 
-  // Mock Conversations
-  const CONVERSATIONS = [
-    { 
-      id: 1, 
-      user: { name: "Sarah Connor", handle: "@skynet_hunter", avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=100", status: "online" },
-      lastMessage: "Is the flux capacitor still available?",
-      time: "5m",
-      unread: 2,
-      history: [
-        { id: 'm1', text: "Hey! Saw your listing.", sender: 'them', time: "10:30 AM" },
-        { id: 'm2', text: "Is the flux capacitor still available?", sender: 'them', time: "10:32 AM" },
-      ]
-    },
-    { 
-      id: 2, 
-      user: { name: "SpeedDemon", handle: "@speedy", avatar: "https://images.unsplash.com/photo-1527980965255-d3b416303d12?auto=format&fit=crop&q=80&w=100", status: "offline" },
-      lastMessage: "Let's race tonight at the neon district.",
-      time: "1h",
-      unread: 0,
-      history: [
-        { id: 'm1', text: "Ready for the run?", sender: 'me', time: "Yesterday" },
-        { id: 'm2', text: "Let's race tonight at the neon district.", sender: 'them', time: "1:00 PM" },
-      ]
-    },
-    { 
-      id: 3, 
-      user: { name: "EuroImports", handle: "@euro_parts", avatar: "https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&q=80&w=100", status: "away" },
-      lastMessage: "Your order #4492 has shipped.",
-      time: "1d",
-      unread: 0,
-      history: [
-        { id: 'm1', text: "Order confirmed.", sender: 'them', time: "Monday" },
-        { id: 'm2', text: "Your order #4492 has shipped.", sender: 'them', time: "Yesterday" },
-      ]
-    },
-  ];
+  // Update active chat if initialChatId changes (e.g., re-navigating from dropdown)
+  useEffect(() => {
+    if (initialChatId) {
+        setActiveChat(initialChatId);
+    }
+  }, [initialChatId]);
 
-  const currentChat = CONVERSATIONS.find(c => c.id === activeChat) || CONVERSATIONS[0];
+  const currentChat = MOCK_CONVERSATIONS.find(c => c.id === activeChat) || MOCK_CONVERSATIONS[0];
 
   const handleSend = () => {
     if(!inputText.trim()) return;
     // In a real app, this would update state/backend
+    // For now, we just clear input to simulate sending
     setInputText("");
   };
 
@@ -65,7 +37,14 @@ const Inbox: React.FC<InboxProps> = ({ currentUser, onBack }) => {
             <div className={`w-full md:w-80 border-r border-theme-border flex flex-col ${activeChat ? 'hidden md:flex' : 'flex'}`}>
                 <div className="p-4 border-b border-theme-border">
                     <div className="flex items-center justify-between mb-4">
-                        <h2 className="text-xl font-display font-bold text-theme-text">Messages</h2>
+                        <div className="flex items-center gap-2">
+                             {onBack && (
+                                <button onClick={onBack} className="md:hidden p-1 -ml-1 text-theme-muted">
+                                    <ChevronLeft className="w-5 h-5" />
+                                </button>
+                             )}
+                            <h2 className="text-xl font-display font-bold text-theme-text">Messages</h2>
+                        </div>
                         <button className="p-2 bg-theme-surface rounded-full text-neon-blue hover:bg-neon-blue/10 transition-colors">
                             <MoreVertical className="w-4 h-4" />
                         </button>
@@ -81,7 +60,7 @@ const Inbox: React.FC<InboxProps> = ({ currentUser, onBack }) => {
                 </div>
 
                 <div className="flex-1 overflow-y-auto">
-                    {CONVERSATIONS.map((chat) => (
+                    {MOCK_CONVERSATIONS.map((chat) => (
                         <div 
                             key={chat.id}
                             onClick={() => setActiveChat(chat.id)}

@@ -17,6 +17,7 @@ export interface User {
   avatar: string;
   isVerified: boolean;
   role: 'USER' | 'DEALER';
+  status?: 'online' | 'offline' | 'away';
 }
 
 export interface Vehicle {
@@ -55,4 +56,20 @@ export interface ChatMessage {
   role: 'user' | 'model';
   text: string;
   timestamp: Date;
+}
+
+export interface DMMessage {
+  id: string;
+  text: string;
+  sender: 'me' | 'them';
+  time: string;
+}
+
+export interface Conversation {
+  id: number;
+  user: User;
+  lastMessage: string;
+  time: string;
+  unread: number;
+  history: DMMessage[];
 }
