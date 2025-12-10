@@ -7,27 +7,21 @@ const getClient = (): GoogleGenAI | null => {
 
   try {
     let apiKey = '';
-    // Aggressive safety check for process.env to prevent "process is not defined" crashes in browser
-    try {
-      if (typeof process !== 'undefined' && process && process.env) {
-         if (process.env.API_KEY) {
-           apiKey = process.env.API_KEY;
-         }
-      }
-    } catch (e) {
-      // Ignore ReferenceError or other access errors in strict browser environments
+    
+    // Safety check: 'process' is now polyfilled in index.html, so this won't crash
+    if (typeof process !== 'undefined' && process.env && process.env.API_KEY) {
+      apiKey = process.env.API_KEY;
     }
 
     if (!apiKey) {
-      // Logic to support safe fallbacks without crashing
-      // console.warn("HyperDrive: API Key not found. Running in offline simulation mode.");
+      // Return null to trigger fallback/simulation mode instead of crashing
       return null;
     }
 
     client = new GoogleGenAI({ apiKey });
     return client;
   } catch (error) {
-    console.error("Failed to initialize GenAI client:", error);
+    console.warn("GenAI Client init failed, switching to simulation mode:", error);
     return null;
   }
 };
@@ -56,7 +50,6 @@ export const generateVehicleInsight = async (vehicleName: string, query: string)
     return response.text || "Systems are offline. Unable to retrieve vehicle data.";
   } catch (error) {
     console.error("Gemini API Error:", error);
-    // Return a fallback string instead of throwing, so the UI doesn't break
     return "Error communicating with the HyperDrive AI Core. Diagnostic systems unavailable.";
   }
 };
@@ -83,7 +76,7 @@ export const analyzeMarketTrends = async (): Promise<string> => {
 
     return response.text || "Market data stream interrupted.";
   } catch (error) {
-    console.error("Gemini API Error:", error);
+    // console.error("Gemini API Error:", error);
     return "Market data unavailable. Connection lost.";
   }
 }

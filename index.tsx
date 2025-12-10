@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom/client';
 import App from './App';
 
 interface ErrorBoundaryProps {
-  children: ReactNode;
+  children?: ReactNode;
 }
 
 interface ErrorBoundaryState {
@@ -11,7 +11,9 @@ interface ErrorBoundaryState {
   error: Error | null;
 }
 
-class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
+class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundaryState> {
+  public state: ErrorBoundaryState;
+
   constructor(props: ErrorBoundaryProps) {
     super(props);
     this.state = { hasError: false, error: null };
@@ -27,6 +29,10 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
 
   render() {
     if (this.state.hasError) {
+      // Remove loader if it exists when error occurs
+      const loader = document.getElementById('app-loader');
+      if (loader) loader.style.display = 'none';
+
       return (
         <div className="flex flex-col items-center justify-center min-h-screen bg-[#050505] text-white p-6 font-sans">
           <div className="max-w-md w-full bg-[#111] border border-red-500/30 rounded-3xl p-8 shadow-2xl">
@@ -67,3 +73,13 @@ root.render(
     </ErrorBoundary>
   </React.StrictMode>
 );
+
+// Remove the initial loader once React has mounted/rendered
+const loader = document.getElementById('app-loader');
+if (loader) {
+  // Small timeout to ensure transition is smooth
+  setTimeout(() => {
+      loader.style.opacity = '0';
+      setTimeout(() => loader.remove(), 500);
+  }, 500);
+}

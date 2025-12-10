@@ -4,6 +4,35 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>HyperDrive Market</title>
+    
+    <!-- CRITICAL: Polyfill process.env to prevent browser crashes -->
+    <script>
+      window.process = {
+        env: {
+          NODE_ENV: 'production',
+          // If Vercel injects keys via build-time replacement, they might appear here, 
+          // otherwise this prevents "process is not defined" errors.
+        }
+      };
+      
+      // Global Error Handler for Import/Syntax Errors before React loads
+      window.onerror = function(message, source, lineno, colno, error) {
+        const loader = document.getElementById('app-loader');
+        if (loader) {
+          loader.innerHTML = `
+            <div style="color: #ff3333; font-family: monospace; padding: 20px; max-width: 600px; margin: 0 auto;">
+              <h2 style="font-size: 20px; margin-bottom: 10px;">SYSTEM BOOT FAILURE</h2>
+              <p>The application encountered a critical error during initialization.</p>
+              <div style="background: rgba(255,50,50,0.1); border: 1px solid #ff3333; padding: 15px; border-radius: 8px; font-size: 12px; margin-top: 15px;">
+                ${message}
+              </div>
+              <p style="margin-top: 10px; font-size: 12px; opacity: 0.7;">Source: ${source} (${lineno}:${colno})</p>
+            </div>
+          `;
+        }
+      };
+    </script>
+
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Exo+2:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script>
@@ -85,6 +114,9 @@
         background-color: rgb(var(--bg-primary));
         color: rgb(var(--text-main));
         transition: background-color 0.3s ease, color 0.3s ease;
+        margin: 0;
+        padding: 0;
+        overflow: hidden; /* Prevent scroll on body, let React app handle it */
       }
       
       /* Glassmorphism Utilities */
@@ -131,6 +163,38 @@
         mask-image: linear-gradient(to right, black 85%, transparent 100%);
         -webkit-mask-image: linear-gradient(to right, black 85%, transparent 100%);
       }
+      
+      /* Loader Styling */
+      #app-loader {
+        position: fixed;
+        inset: 0;
+        background-color: #050505;
+        z-index: 9999;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        font-family: 'Rajdhani', sans-serif;
+        color: white;
+      }
+      .loader-hex {
+        width: 60px;
+        height: 60px;
+        border: 2px solid #00f3ff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+        animation: pulse 2s infinite;
+        margin-bottom: 20px;
+      }
+      .loader-text {
+        letter-spacing: 0.2em;
+        font-size: 14px;
+        color: #00f3ff;
+        animation: blink 1s infinite;
+      }
+      @keyframes blink { 50% { opacity: 0.5; } }
     </style>
   <script type="importmap">
 {
@@ -149,6 +213,14 @@
 </script>
 </head>
   <body>
+    <!-- Initial Loading Screen -->
+    <div id="app-loader">
+      <div class="loader-hex">
+        <div style="width: 10px; height: 10px; background: #00f3ff; border-radius: 50%;"></div>
+      </div>
+      <div class="loader-text">INITIALIZING HYPERDRIVE...</div>
+    </div>
+    
     <div id="root"></div>
   </body>
 </html>
