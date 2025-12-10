@@ -4,7 +4,9 @@ let client: GoogleGenAI | null = null;
 
 const getClient = (): GoogleGenAI => {
   if (!client) {
-    client = new GoogleGenAI({ apiKey: process.env.API_KEY || '' });
+    // Safely access process.env to prevent ReferenceError: process is not defined in browser environments
+    const apiKey = (typeof process !== 'undefined' && process.env && process.env.API_KEY) ? process.env.API_KEY : '';
+    client = new GoogleGenAI({ apiKey });
   }
   return client;
 };
